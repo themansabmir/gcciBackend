@@ -27,6 +27,7 @@ const mblSchema = new mongoose.Schema({
   mblDate: { type: "string", required: true },
   receiptPlace: { type: "string", required: true },
   vessel: { type: "string", required: true },
+  voyage:{type:'string', default:""},
   tradeType: { type: "string", required: true },
   freightType: { type: "string", required: true },
   exchangeRate: { type: "string", required: true },
@@ -106,6 +107,7 @@ const mblSchema = new mongoose.Schema({
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "HBL",
+      default:""
     },
   ],
 });
