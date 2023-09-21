@@ -23,11 +23,11 @@ const mblSchema = new mongoose.Schema({
   },
 
   shiplineName: { type: "string", required: true },
-  mblNumber: { type: "string", required: true,  },
+  mblNumber: { type: "string", required: true },
   mblDate: { type: "string", required: true },
   receiptPlace: { type: "string", required: true },
   vessel: { type: "string", required: true },
-  voyage:{type:'string', default:""},
+  voyage: { type: "string", default: "" },
   tradeType: { type: "string", required: true },
   freightType: { type: "string", required: true },
   exchangeRate: { type: "string", required: true },
@@ -38,6 +38,7 @@ const mblSchema = new mongoose.Schema({
   billEntryDate: { type: "string", required: true },
   freePOL: { type: "string", required: true },
   freePOD: { type: "string", required: true },
+  remarks: { type: String, default: "" },
   containerDetails: [
     {
       containerNumber: { type: "string", required: true },
@@ -51,6 +52,7 @@ const mblSchema = new mongoose.Schema({
       shipperSeal: { type: "string", required: true },
       customsSeal: { type: "string", required: true },
       description: { type: "string", required: true },
+      hsCode: { type: String, required: true },
     },
   ],
 
@@ -107,7 +109,7 @@ const mblSchema = new mongoose.Schema({
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "HBL",
-      default:""
+      default: "",
     },
   ],
 });
