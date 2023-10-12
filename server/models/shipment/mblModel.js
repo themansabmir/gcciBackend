@@ -112,6 +112,8 @@ const mblSchema = new mongoose.Schema({
       default: "",
     },
   ],
+}, {
+  timestamps:true
 });
 
 const MBL = mongoose.model("MBL", mblSchema);

@@ -3,6 +3,8 @@ const MBL = require("../models/shipment/mblModel");
 const mblCtrl = {
   createMBL: async (req, res) => {
     try {
+
+      console.log(req.body.etaPod)
       const {
         shipmentMedium,
         shipmentType,
@@ -88,7 +90,7 @@ const mblCtrl = {
   },
   getMbl: async (req, res) => {
     try {
-      const mbl = await MBL.find().populate("hblList");
+      const mbl = await MBL.find().populate(`loadingPort dischargePort`);
       return res.status(200).json({ data: mbl });
     } catch (error) {
       return res.status(500).json({ msg: error.message });
@@ -96,6 +98,47 @@ const mblCtrl = {
   },
   getMblById: async (req, res) => {
     try {
+      const { mblId } = req.body;
+
+      const mbl = await MBL.findOne({ _id: mblId }).populate([
+        {
+          path: "shipperName",
+          select: "companyName mobileNumber email panNumber",
+        },
+        {
+          path: "shipperAddress",
+          select: "state country gstNumber",
+        },
+        {
+          path: "consigneeName",
+          select: "companyName mobileNumber email panNumber",
+        },
+        {
+          path: "consigneeAddress",
+          select: "state country gstNumber",
+        },
+        {
+          path: "loadingPort",
+          select: "portName portCode",
+        },
+        {
+          path: "dischargePort",
+          select: "portName portCode",
+        },
+        {
+          path: "notifyName",
+          select: "companyName mobileNumber email panNumber",
+        },
+        {
+          path: "notifyAddress",
+          select: "state country gstNumber",
+        },
+      ]);
+
+
+      console.log(mbl)
+
+      return res.status(200).json({ data: mbl });
     } catch (error) {
       return res.status(500).json({ msg: error.message });
     }
