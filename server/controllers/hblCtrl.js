@@ -148,6 +148,16 @@ const hblCtrl = {
       return res.status(500).json({ msg: error.message });
     }
   },
+  getHblByMblId: async (req, res) => {
+    try {
+      const { mblId } = req.body;
+      const isMbl = await MBL.findOne({ _id: mblId });
+      const hblData = await HBL.find({ mblNumber: isMbl.mblNumber }).populate(
+        `shipperName shipperAddress consigneeName consigneeAddress notifyName notifyAddress loadingPort dischargePort`
+      );
+      return res.json({ data: hblData });
+    } catch (error) {}
+  },
 };
 
 module.exports = hblCtrl;

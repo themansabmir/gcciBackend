@@ -1,0 +1,95 @@
+const Shipment = require("../models/shipment/shipmentModel");
+const Task = require("../models/shipment/taskModel");
+
+const shipmentCtrl = {
+  createShipment: async (req, res) => {
+    try {
+      const data = req.body;
+
+      const importTaskList = [
+        {
+          taskName: "Liner BL",
+          taskStatus: "pending",
+          taskType: "import",
+        },
+        {
+          taskName: "House BL",
+          taskStatus: "pending",
+          taskType: "import",
+        },
+        {
+          taskName: "IGM Filing",
+          taskStatus: "pending",
+          taskType: "import",
+        },
+        {
+          taskName: "Purchase Invoice",
+          taskStatus: "pending",
+          taskType: "import",
+        },
+        {
+          taskName: "Sales Invoice",
+          taskStatus: "pending",
+          taskType: "import",
+        },
+      ];
+      const exportTaskList = [
+        {
+          taskName: "House Draft BL",
+          taskStatus: "pending",
+          taskType: "export",
+        },
+        {
+          taskName: "Liner Draft BL",
+          taskStatus: "pending",
+          taskType: "export",
+        },
+        {
+          taskName: "Shipping Instruction",
+          taskStatus: "pending",
+          taskType: "export",
+        },
+        {
+          taskName: "VGM",
+          taskStatus: "pending",
+          taskType: "export",
+        },
+        {
+          taskName: "TR Handover",
+          taskStatus: "pending",
+          taskType: "export",
+        },
+        {
+          taskName: "Raise TAX Invoice",
+          taskStatus: "pending",
+          taskType: "export",
+        },
+        {
+          taskName: "Purchase Invoice",
+          taskStatus: "pending",
+          taskType: "export",
+        },
+      ];
+      let tasksList = "";
+      if (data.shipmentType === "import") {
+        tasksList = await Task.insertMany(importTaskList);
+      } else {
+        tasksList = await Task.insertMany(exportTaskList);
+      }
+      const val = await Promise.resolve(tasksList).then((data) => {
+        return data;
+      });
+
+      let shipmentTasks = { ...data };
+      shipmentTasks.tasks = val;
+
+      const newShipment = await Shipment.create(shipmentTasks);
+
+      return res.status(200).json({ data: newShipment });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+};
+
+module.exports = shipmentCtrl;

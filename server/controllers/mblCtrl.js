@@ -1,10 +1,10 @@
 const MBL = require("../models/shipment/mblModel");
+const Shipment = require("../models/shipment/shipmentModel");
 
 const mblCtrl = {
   createMBL: async (req, res) => {
     try {
-
-      console.log(req.body.etaPod)
+      console.log(req.body.etaPod);
       const {
         shipmentMedium,
         shipmentType,
@@ -42,6 +42,7 @@ const mblCtrl = {
         deliveryPlace,
         etaPod,
         hblList,
+        shipmentId,
       } = req.body;
 
       const newMbl = await MBL.create({
@@ -81,6 +82,13 @@ const mblCtrl = {
         etaPod,
         remarks,
         hblList,
+      }).then((mbl) => {
+      return  Shipment.findOneAndUpdate({ _id: shipmentId }, { mbl: mbl._id }).then(
+          (newmbl) => {
+            console.log(mbl)
+            return mbl;
+          }
+        );
       });
 
       res.status(200).json({ data: newMbl });
@@ -135,8 +143,7 @@ const mblCtrl = {
         },
       ]);
 
-
-      console.log(mbl)
+      console.log(mbl);
 
       return res.status(200).json({ data: mbl });
     } catch (error) {
