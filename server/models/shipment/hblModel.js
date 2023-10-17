@@ -7,14 +7,14 @@ const hblSchema = new mongoose.Schema(
     HBLtype: { type: "string", required: true },
 
     hblNumber: { type: "string", required: true },
-    hblDate: { type: "string", required: true },
+    hblDate: { type: "string" },
     receiptPlace: { type: "string", required: true },
     vessel: { type: "string", required: true },
     voyage: { type: "string", required: true },
     tradeType: { type: "string", required: true },
     freightType: { type: "string", required: true },
     exchangeRate: { type: "string", required: true },
-    transhipmentPort: { type: "string", required: true },
+    transhipmentPort: { type: "string" },
 
     SOBdate: { type: "string", required: true },
     shippingBillNumber: { type: "string", required: true },
@@ -23,7 +23,7 @@ const hblSchema = new mongoose.Schema(
     billEntryDate: { type: "string", required: true },
     freePOL: { type: "string", required: true },
     freePOD: { type: "string", required: true },
-    goodsType: { type: "string", required: true },
+    goodsType: { type: "string" },
     containerDetails: [
       {
         containerNumber: { type: "string", required: true },
@@ -41,37 +41,67 @@ const hblSchema = new mongoose.Schema(
       },
     ],
 
-    shipperName: {
+    shipperId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
+    },
+    ShipperName: {
+      type: String
+    },
+    shipperAddressId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CustomerAddress",
     },
     shipperAddress: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CustomerAddress",
     },
-    consigneeName: {
+
+    consigneeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
+    },
+    consigneeName: {
+      type:String
+    },
+    consigneeAddressId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CustomerAddress",
     },
     consigneeAddress: {
+      type: String
+    },
+    notifyId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "CustomerAddress",
+      ref: "Customer",
     },
     notifyName: {
+      type: String
+    },
+    notifyAddressId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Customer",
+      ref: "CustomerAddress",
     },
     notifyAddress: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "CustomerAddress",
+      type: String
     },
-    agentName: {
+    agentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
     },
-    agentAddress: {
+    agentName: {
+      type:String
+    },
+    agentAddressId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CustomerAddress",
+    },
+    agentAddress: {
+      type: String
+    },
+    shipmentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref:"Shipment"
     },
     loadingPort: {
       type: mongoose.Schema.Types.ObjectId,

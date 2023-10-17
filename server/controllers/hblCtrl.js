@@ -1,102 +1,18 @@
 const HBL = require("../models/shipment/hblModel");
 const MBL = require("../models/shipment/mblModel");
+const Shipment  = require('../models/shipment/shipmentModel')
 
 const hblCtrl = {
   createHBL: async (req, res) => {
-    console.log(req.body);
+
     try {
-      const {
-        shiplineName,
-        containerDetails,
-        hblNumber,
-        hblDate,
-        receiptPlace,
-        vessel,
-        tradeType,
-        voyage,
-        transhipmentPort,
-        mblNumber,
-        HBLtype,
-        freightType,
-        exchangeRate,
-        SOBdate,
-        shippingBillNumber,
-        shippingBillDate,
-        billEntryNumber,
-        billEntryDate,
-        freePOL,
-        freePOD,
-        containerNumber,
-        pkgCount,
-        pkgType,
-        grossWeight,
-        netWeight,
-        volume,
-        lineSeal,
-        shipperSeal,
-        customsSeal,
-        description,
-        goodsType,
-        shipperName,
-        shipperAddress,
-        consigneeName,
-        consigneeAddress,
-        notifyName,
-        notifyAddress,
-        deliveryAgent,
-        deliveryAddress,
-        loadingPort,
-        dischargePort,
-        deliveryPlace,
-        etaPod,
-      } = req.body;
+      const data= req.body;
 
-      const newHBL = await HBL.create({
-        shiplineName,
-        hblNumber,
-        hblDate,
-        receiptPlace,
-        vessel,
-        tradeType,
-        freightType,
-        exchangeRate,
-        SOBdate,
-        shippingBillNumber,
-        shippingBillDate,
-        containerDetails,
+      const newHBL = await HBL.create(data);
 
-        billEntryNumber,
-        billEntryDate,
-        freePOL,
-        freePOD,
-        voyage,
-        transhipmentPort,
-        mblNumber,
-        HBLtype,
-        containerNumber,
-        pkgCount,
-        pkgType,
-        grossWeight,
-        netWeight,
-        volume,
-        lineSeal,
-        shipperSeal,
-        customsSeal,
-        description,
-        goodsType,
-        shipperName,
-        shipperAddress,
-        consigneeName,
-        consigneeAddress,
-        notifyName,
-        notifyAddress,
-        deliveryAgent,
-        deliveryAddress,
-        loadingPort,
-        dischargePort,
-        deliveryPlace,
-        etaPod,
-      });
+      const shipment = await Shipment.findById({ _id: data?.shipmentId })
+       shipment.hblList.push(newHBL._id)
+      shipment.save();
 
       await MBL.findOne({ mblNumber: mblNumber })
         .exec()

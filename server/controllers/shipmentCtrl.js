@@ -87,9 +87,22 @@ const shipmentCtrl = {
 
       return res.status(200).json({ data: newShipment });
     } catch (error) {
-      console.log(error);
+  return res.status(500).json({msg: error.message})
     }
   },
+
+  getShipmentByType: async (req, res) => {
+    try {
+      const {shipmentType} = req.body
+
+      const shipments = await Shipment.find({ shipmentType })
+      if (!shipments) return res.status(400).json({ msg: "Data does not exist " })
+
+      return res.status(200).json({data:shipments})
+    } catch (error) {
+return res.status(500).json({msg:error})
+    }
+  }
 };
 
 module.exports = shipmentCtrl;

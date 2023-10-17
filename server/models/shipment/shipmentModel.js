@@ -11,6 +11,24 @@ const ShipmentSchema = new mongoose.Schema(
       required: false,
       default: null,
     },
+    loadingPort: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Port",
+    },
+    dischargePort: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Port",
+    },
+    shiplineName: {
+      type: String,
+      required: true,
+    },
+    deliveryPlace: {
+      type: String,
+    },
+    etaPod: {
+      type: String,
+    },
     referenceNumber: {
       type: "String",
       required: true,
