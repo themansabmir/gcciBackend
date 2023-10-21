@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+ const castObjectId = mongoose.ObjectId.cast();
+ mongoose.ObjectId.cast((v) => (v === "" ? v : castObjectId(v)));
 const hblSchema = new mongoose.Schema(
   {
     shiplineName: { type: "string" },
@@ -44,11 +46,11 @@ const hblSchema = new mongoose.Schema(
     shipperId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
-      require:false
+      default:null
     },
     ShipperName: {
       type: String,
-      
+
     },
     shipperAddressId: {
       type: mongoose.Schema.Types.ObjectId,

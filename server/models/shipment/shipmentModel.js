@@ -27,7 +27,8 @@ const ShipmentSchema = new mongoose.Schema(
     },
     referenceNumber: {
       type: "String",
-      required: true,
+      unique:true
+
     },
     mbl: {
       type: mongoose.Schema.Types.ObjectId,
@@ -45,6 +46,7 @@ const ShipmentSchema = new mongoose.Schema(
         ref: "Tasks",
       },
     ],
+    SOBdate:{type:String},
     sales: String,
     purchase: String,
     logs: String,

@@ -6,6 +6,10 @@ const taskSchema = new mongoose.Schema({
     default: "pending",
   },
   taskType: String,
+  shipmentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref:'Shipment'
+  }
 });
 
 const Tasks = mongoose.model("Tasks", taskSchema);
