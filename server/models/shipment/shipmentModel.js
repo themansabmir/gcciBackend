@@ -6,11 +6,7 @@ const ShipmentSchema = new mongoose.Schema(
       type: "String",
       required: true,
     },
-    shipmentNumber: {
-      type: Number,
-      required: false,
-      default: null,
-    },
+
     loadingPort: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Port",

@@ -2,59 +2,60 @@ const mongoose = require("mongoose");
 
 const hblSchema = new mongoose.Schema(
   {
-    shiplineName: { type: "string", required: true },
-    mblNumber: { type: "string", required: true },
-    HBLtype: { type: "string", required: true },
+    shiplineName: { type: "string" },
+    mblNumber: { type: "string" },
+    HBLtype: { type: "string" },
 
-    hblNumber: { type: "string", required: true },
+    hblNumber: { type: "string" },
     hblDate: { type: "string" },
-    receiptPlace: { type: "string", required: true },
-    vessel: { type: "string", required: true },
-    voyage: { type: "string", required: true },
-    tradeType: { type: "string", required: true },
-    freightType: { type: "string", required: true },
-    exchangeRate: { type: "string", required: true },
+    receiptPlace: { type: "string" },
+    vessel: { type: "string" },
+    voyage: { type: "string" },
+    tradeType: { type: "string" },
+    freightType: { type: "string" },
+    exchangeRate: { type: "string" },
     transhipmentPort: { type: "string" },
 
-    SOBdate: { type: "string", required: true },
-    shippingBillNumber: { type: "string", required: true },
-    shippingBillDate: { type: "string", required: true },
-    billEntryNumber: { type: "string", required: true },
-    billEntryDate: { type: "string", required: true },
-    freePOL: { type: "string", required: true },
-    freePOD: { type: "string", required: true },
+    SOBdate: { type: "string" },
+    shippingBillNumber: { type: "string" },
+    shippingBillDate: { type: "string" },
+    billEntryNumber: { type: "string" },
+    billEntryDate: { type: "string" },
+    freePOL: { type: "string" },
+    freePOD: { type: "string" },
     goodsType: { type: "string" },
     containerDetails: [
       {
-        containerNumber: { type: "string", required: true },
-        containerType: { type: "string", required: true },
-        pkgCount: { type: "string", required: true },
-        pkgType: { type: "string", required: true },
-        grossWeight: { type: "string", required: true },
-        netWeight: { type: "string", required: true },
-        volume: { type: "string", required: true },
-        lineSeal: { type: "string", required: true },
-        shipperSeal: { type: "string", required: true },
-        customsSeal: { type: "string", required: true },
-        description: { type: "string", required: true },
-        hsCode: { type: String, required: true },
+        containerNumber: { type: "string" },
+        containerType: { type: "string" },
+        pkgCount: { type: "string" },
+        pkgType: { type: "string" },
+        grossWeight: { type: "string" },
+        netWeight: { type: "string" },
+        volume: { type: "string" },
+        lineSeal: { type: "string" },
+        shipperSeal: { type: "string" },
+        customsSeal: { type: "string" },
+        description: { type: "string" },
+        hsCode: { type: String },
       },
     ],
 
     shipperId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
+      require:false
     },
     ShipperName: {
-      type: String
+      type: String,
+      
     },
     shipperAddressId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CustomerAddress",
     },
     shipperAddress: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "CustomerAddress",
+      type: String,
     },
 
     consigneeId: {
@@ -62,46 +63,48 @@ const hblSchema = new mongoose.Schema(
       ref: "Customer",
     },
     consigneeName: {
-      type:String
+      type: String,
     },
     consigneeAddressId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CustomerAddress",
     },
     consigneeAddress: {
-      type: String
+      type: String,
     },
     notifyId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
     },
     notifyName: {
-      type: String
+      type: String,
     },
     notifyAddressId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CustomerAddress",
+      default: "",
     },
     notifyAddress: {
-      type: String
+      type: String,
     },
     agentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
     },
     agentName: {
-      type:String
+      type: String,
     },
     agentAddressId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CustomerAddress",
     },
     agentAddress: {
-      type: String
+      type: String,
     },
     shipmentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref:"Shipment"
+      ref: "Shipment",
+      required: false,
     },
     loadingPort: {
       type: mongoose.Schema.Types.ObjectId,

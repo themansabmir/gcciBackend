@@ -71,10 +71,13 @@ const shipmentCtrl = {
         },
       ];
       let tasksList = "";
+      let count = 1
       if (data.shipmentType === "import") {
         tasksList = await Task.insertMany(importTaskList);
+        count = (await Shipment.find({ shipmentType :"import"})).length;
       } else {
         tasksList = await Task.insertMany(exportTaskList);
+        count = (await Shipment.find({shipmentType:"export"})).length
       }
       const val = await Promise.resolve(tasksList).then((data) => {
         return data;
@@ -82,6 +85,12 @@ const shipmentCtrl = {
 
       let shipmentTasks = { ...data };
       shipmentTasks.tasks = val;
+      if (data.shipmentType === "import") {
+        shipmentTasks.referenceNumber = "IMP" + ++count;
+      } else {
+        shipmentTasks.referenceNumber = "EXP" + ++count;
+
+      }
 
       const newShipment = await Shipment.create(shipmentTasks);
 

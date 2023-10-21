@@ -80,6 +80,8 @@ const mblCtrl = {
       const { shipmentId } = req.body;
       const mbl = await MBL.find({ shipmentId: shipmentId });
 
+      if(!mbl) return res.status(400).json({msg:"MBL does not exist"})
+
       return res.status(200).json({ data: mbl });
     } catch (error) {}
   },
