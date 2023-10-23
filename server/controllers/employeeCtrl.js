@@ -4,10 +4,23 @@ const jwt = require("jsonwebtoken");
 const employeeCtrl = {
   createEmployee: async (req, res) => {
     try {
-      const { username, fullname, email, password, role } = req.body;
+      const {
+        username,
+        fullname,
+        email,
+        password,
+        role,
+        employeeId,
+        departments,
+      } = req.body;
 
       // Check if the email already exists in the database
-      const existingEmployee = await Employee.findOne({ email });
+      const existingEmployee = await Employee.findOne({
+        $or: [
+          { email: email },
+          { username: username }, // Assuming 'username' is the field you want to check
+        ],
+      });
       if (existingEmployee) {
         return res.status(409).json({ error: "Email already exists" });
       }
@@ -18,17 +31,19 @@ const employeeCtrl = {
         username,
         fullname,
         email,
-        password,
+        password: hashedPassword,
         role,
+        employeeId,
+        departments,
       });
       await newEmployee.save();
-      const findEmployee = await Employee.findById(newEmployee._id).populate(
-        "role"
-      );
+      const findEmployee = await Employee.findById(newEmployee._id);
 
       const payload = {
-        employeeId: findEmployee._id,
+        userId: findEmployee._id,
         role: findEmployee.role,
+        departments: findEmployee.departments,
+        username: findEmployee.username,
       };
 
       // Save the new employee in the database
@@ -51,8 +66,7 @@ const employeeCtrl = {
     try {
       // Retrieve all employees from the database
       const employees = await Employee.find()
-        .populate("role")
-        .select("-password");
+      .select("-password");
 
       // Return the list of employees
       res.status(200).json({ data: employees });
@@ -64,17 +78,14 @@ const employeeCtrl = {
 
   updateEmployee: async (req, res) => {
     try {
-      const { fullname, role } = req.body;
+      const data = req.body;
       const updatedEmployee = await Employee.findByIdAndUpdate(
-        { _id: req.params.id },
-        {
-          fullname,
-          role,
-        },
+        { _id: req.body._id },
+        data,
         {
           new: true,
         }
-      ).populate("role");
+      );
       res.status(200).json({ msg: updatedEmployee });
     } catch (error) {
       return res.status(500).json({ msg: error.message });
@@ -95,18 +106,17 @@ const employeeCtrl = {
       const employee = await Employee.findOne({ email });
       if (!employee) return res.status(400).json({ msg: "Email incorrect" });
 
-      // // const isMatch = await bcrypt.compare(password, employee.password);
+      const isMatch = await bcrypt.compare(password, employee.password);
 
-      // if (isMatch === false)
-      //   return res.status(400).json({ msg: "Email or password is incorrect" });
-      const findEmployee = await Employee.findById(
-        employee._id,
-        "-password"
-      ).populate("role");
+      if (isMatch === false)
+        return res.status(400).json({ msg: "Email or password is incorrect" });
+      const findEmployee = await Employee.findById(employee._id, "-password");
 
       const payload = {
-        employeeId: findEmployee._id,
+        userId: findEmployee._id,
         role: findEmployee.role,
+        departments: findEmployee.departments,
+        username: findEmployee.username,
       };
 
       const token = await generateAccessToken(payload);
@@ -118,7 +128,6 @@ const employeeCtrl = {
 
       // Return the newly created employee
       res.status(200).json({
-        eemployee: findEmployee,
         token: token,
       });
     } catch (error) {

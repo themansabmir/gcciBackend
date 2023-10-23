@@ -6,6 +6,7 @@ router
   .route("/employee")
   .post(employeeCtrl.createEmployee)
   .get(employeeCtrl.getAllEmployee);
+  
 router
   .route("/employee/:id")
   .put(employeeCtrl.updateEmployee)

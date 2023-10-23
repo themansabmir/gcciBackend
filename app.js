@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
+const { isAuthenticated } = require("./server/middleware/authentication");
 const app = express();
 
 app.use(
@@ -12,15 +13,16 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
-
+// app.use(isAuthenticated);
 // app.use("/api", require("./server/routes/shipmentRouter"));
 app.use("/api", require("./server/routes/employeeRouter"));
 app.use("/api", require("./server/routes/addressRoute"));
-app.use('/api', require("./server/routes/portRoute"))
-app.use('/api', require("./server/routes/hblrouter"))
-app.use('/api', require("./server/routes/shipmentRouter"))
-app.use('/api', require('./server/routes/taskRouter'))
-app.use('/api', require('./server/routes/mblRouter'))
+app.use("/api", require("./server/routes/portRoute"));
+app.use("/api", require("./server/routes/hblrouter"));
+app.use("/api", require("./server/routes/shipmentRouter"));
+app.use("/api", require("./server/routes/taskRouter"));
+app.use("/api",  require("./server/routes/mblRouter"));
+app.use("/api", require("./server/routes/departmentRouter"));
 
 app.use("/api", require("./server/routes/customerRoute"));
 

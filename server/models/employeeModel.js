@@ -1,30 +1,40 @@
 const mongoose = require("mongoose");
-const employeeSchema = new mongoose.Schema({
-  fullname: {
-    type: String,
-  },
-  username: {
-    type: String,
-  },
-  email: {
-    type: String,
-  },
-  password: {
-    type: String,
-  },
-  role: {
-    type: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref:'Role'
-
-    }],
-    required: true,
-    validate: {
-      validator:(value) => value.length>0
+const employeeSchema = new mongoose.Schema(
+  {
+    fullname: {
+      type: String,
     },
-    message:"Atleast one Role is required for employee"
+    username: {
+      type: String,
+    },
+    email: {
+      type: String,
+    },
+    password: {
+      type: String,
+    },
+    employeeId: {
+      type: String,
+    },
+    role: {
+      type: String,
+    },
+    departments: [
+      {
+        departmentName: {
+          type: String,
+        },
+        permissions: {
+          type: [String],
+       
+        },
+      },
+    ],
+  },
+  {
+    timestamps: true,
   }
-});
+);
 
 const Employee = mongoose.model("Employee", employeeSchema);
 module.exports = Employee;
