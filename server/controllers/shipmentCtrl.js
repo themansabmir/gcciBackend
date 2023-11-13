@@ -120,10 +120,11 @@ const shipmentCtrl = {
     }
   },
 
+  // import or export type of shipment
   getShipmentByType: async (req, res) => {
     try {
       const { shipmentType } = req.body;
-
+      console.log(shipmentType);
       const shipments = await Shipment.find({ shipmentType });
 
       if (!shipments)
@@ -132,6 +133,38 @@ const shipmentCtrl = {
       return res.status(200).json({ data: shipments });
     } catch (error) {
       return res.status(500).json({ msg: error });
+    }
+  },
+
+  // get estimated time of arrival or SOB
+  getShipmentsByDate: async (req, res) => {
+    try {
+      const { shipmentType, userDate } = req.body;
+
+      const todaysDate = new Date();
+      const dateThreshold = new Date(todaysDate);
+      dateThreshold.setDate(dateThreshold.getDate() + 10);
+
+      const query = {
+        shipmentType: shipmentType,
+      };
+      if (shipmentType === "import") {
+        query.etaPod = {
+          $gte: todaysDate.toISOString().split("T")[0],
+          $lte: dateThreshold.toISOString(),
+        };
+      } else {
+        query.SOBdate = {
+          $gte: todaysDate.toISOString().split("T")[0],
+          $lte: dateThreshold.toISOString(),
+        };
+      }
+
+      const shipments = await Shipment.find(query);
+
+      return res.status(200).json({ data: shipments });
+    } catch (error) {
+      return res.status(500).json({ msg: error.message });
     }
   },
 };

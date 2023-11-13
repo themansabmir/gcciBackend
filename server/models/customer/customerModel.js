@@ -27,6 +27,7 @@ const customerSchema = new mongoose.Schema({
   },
   fax: { type: String },
   panNumber: { type: String },
+  IEC: { type: String },
   customerAddress: [
     {
       type: mongoose.Schema.Types.ObjectId,

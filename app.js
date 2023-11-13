@@ -4,6 +4,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const { isAuthenticated } = require("./server/middleware/authentication");
+const { Port } = require("./server/models/portModel");
 const app = express();
 
 app.use(
@@ -26,13 +27,30 @@ app.use("/api", require("./server/routes/departmentRouter"));
 
 app.use("/api", require("./server/routes/customerRoute"));
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 const URI = process.env.MONGODB;
 mongoose
   .connect(URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then((res) => console.log("Mongo Db Connected"))
+  .then((res) => {
+
+
+    console.log("Mongo Db Connected")
+  })
   .catch((err) => console.log(err));
 
 const PORT = process.env.PORT || 5000;

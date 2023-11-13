@@ -6,7 +6,8 @@ const router = require('express').Router()
 
 
 router.route("/shipment").post(shipmentCtrl.createShipment);
-router.route("/shipmentbytype").post(checkAccess("Shipment","Read"), shipmentCtrl.getShipmentByType)
+router.route("/shipmentbytype").post(shipmentCtrl.getShipmentByType)
+router.route('/shipmentBydate').post(shipmentCtrl.getShipmentsByDate)
 
 
 module.exports= router
