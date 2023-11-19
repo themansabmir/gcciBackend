@@ -22,23 +22,11 @@ app.use("/api", require("./server/routes/portRoute"));
 app.use("/api", require("./server/routes/hblrouter"));
 app.use("/api", require("./server/routes/shipmentRouter"));
 app.use("/api", require("./server/routes/taskRouter"));
-app.use("/api",  require("./server/routes/mblRouter"));
+app.use("/api", require("./server/routes/mblRouter"));
 app.use("/api", require("./server/routes/departmentRouter"));
+app.use("/api", require("./server/routes/reminderRoute"));
 
 app.use("/api", require("./server/routes/customerRoute"));
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const URI = process.env.MONGODB;
 mongoose
@@ -47,9 +35,7 @@ mongoose
     useUnifiedTopology: true,
   })
   .then((res) => {
-
-
-    console.log("Mongo Db Connected")
+    console.log("Mongo Db Connected");
   })
   .catch((err) => console.log(err));
 
