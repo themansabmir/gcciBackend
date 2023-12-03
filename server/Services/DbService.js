@@ -1,4 +1,4 @@
- class ModelServices {
+class ModelServices {
   constructor(database) {
     this.database = database;
   }
@@ -20,8 +20,15 @@
       return error;
     }
   }
+
+  async getInsightsByAggregate(query) {
+    try {
+      const data = await this.database.aggregate(query);
+      return data;
+    } catch (error) {
+      return error;
+    }
+  }
 }
-
-
 
 module.exports = ModelServices;

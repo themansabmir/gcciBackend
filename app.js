@@ -25,6 +25,7 @@ app.use("/api", require("./server/routes/taskRouter"));
 app.use("/api", require("./server/routes/mblRouter"));
 app.use("/api", require("./server/routes/departmentRouter"));
 app.use("/api", require("./server/routes/reminderRoute"));
+app.use("/api", require("./server/routes/shipmentInsightRouter"));
 
 app.use("/api", require("./server/routes/customerRoute"));
 
