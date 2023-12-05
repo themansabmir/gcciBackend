@@ -6,8 +6,8 @@ const shipmentInsightModel = mongoose.Schema({
   destinationPortName: String,
   chaNumber: String,
   shippingBillDate: String,
-  originPortCode: String,
-  destinationPortCode: String,
+  originPortCode: mongoose.Schema.Types.ObjectId,
+  destinationPortCode: mongoose.Schema.Types.ObjectId,
   package: String, // Assuming "Package" is a valid field name, but consider renaming it to follow JavaScript naming conventions (e.g., package)
   grossWeight: String,
   containerNumber: String,
