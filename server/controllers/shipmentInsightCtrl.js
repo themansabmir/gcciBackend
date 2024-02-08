@@ -116,12 +116,18 @@ const shipmentInsightCtrl = {
           $unwind: "$destPortData",
         },
         groupStage,
+
         {
           $project: {
             _id: 0,
             originName: "$_id.origin",
             destination: "$_id.destinationPortCode",
             count: 1,
+          },
+        },
+        {
+          $sort: {
+            originName: 1,
           },
         },
       ];
