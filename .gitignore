@@ -1,0 +1,37 @@
+# Node.js and TypeScript project
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.*.json
+report.*.diagnostic
+
+# Dependency directories
+node_modules/
+/dist
+/build
+
+# Temporary files
+tmp/
+temp/
+*.tsbuildinfo
+
+# Optional files
+.env
+.vscode/
+.idea/
+
+# Editor/IDE config
+.DS_Store
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Debug
+/coverage

@@ -1,0 +1,31 @@
+import { Schema, model } from 'mongoose';
+import { IVendor, VendorTypeEnum } from './vendor.types';
+
+const LocationSchema = new Schema({
+  city: { type: String, required: true },
+  address: { type: String, required: true },
+  state: { type: String, required: true },
+  country: { type: String, required: true },
+  pin_code: { type: String, required: true },
+  telephone: { type: String, required: true },
+  mobile_number: { type: String, required: true },
+  fax: { type: String, required: true },
+  gst_number: { type: String, required: true },
+  pan_number: { type: String, required: true },
+});
+
+const VendorSchema = new Schema<IVendor>(
+  {
+    vendor_name: { type: String, required: true, unique: true, trim: true },
+    vendor_type: { type: [String], enum: VendorTypeEnum, required: true },
+    locations: {
+      type: [LocationSchema],
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
+
+export const VendorEntity = model<IVendor>('Vendor', VendorSchema);
+
+VendorSchema.index({ vendor_name: 1 }, { unique: true });
