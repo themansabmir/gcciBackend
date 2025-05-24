@@ -2,6 +2,7 @@
 
 import { ZodSchema } from "zod";
 import { Request, Response, NextFunction } from "express";
+import { Logger } from "@lib/logger";
 
 const extractErrors = (
   error: any,
@@ -34,6 +35,7 @@ export const validateDTO = (schema: ZodSchema<any>) => {
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
+      Logger.error("ERROR:ZOD validation error", result?.error.format())
       const friendlyErrors = extractErrors(result.error.format());
       if (Object.keys(friendlyErrors).length === 0)
         throw new Error("Invalid request body");

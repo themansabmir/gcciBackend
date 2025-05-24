@@ -55,6 +55,6 @@ const teamEntity = new Schema<ITeam>(
   }
 );
 
-const TeamModel = model("Team", teamEntity);
+const TeamEntity = model("Team", teamEntity);
 
-export default TeamModel;
+export default TeamEntity;
