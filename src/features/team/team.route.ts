@@ -1,11 +1,13 @@
-import express from "express";
-import { createTeamDTO } from "./team.dto";
+import {defaultRouter} from '@lib/router';
+import { createTeamSchema, loginschema } from './team.dto';
 
-import { validateDTO } from "middleware/validateDTO";
-import { createTeam } from "./team.controller";
+import { validateDTO } from 'middleware/validateDTO';
+import { teamController } from './team.controller';
 
-const router = express.Router();
+const teamRouter = defaultRouter()
+teamRouter.post('/', validateDTO(createTeamSchema), teamController.createTeam);
+teamRouter.post('/login', validateDTO(loginschema),);
 
-router.post("/team",validateDTO(createTeamDTO),   createTeam);
 
-export default router
+
+export default teamRouter;

@@ -10,6 +10,7 @@ import { errorHandler } from "@middleware/error-handler";
 import teamRouter from "@features/team/team.route";
 import airportRouter from "@features/airport/airport.route";
 import vendorRouter from "@features/vendor/vendor.route";
+import authRouter from "auth/auth.router";
 dotenv.config();
 
 const app = express();
@@ -18,8 +19,9 @@ app.use(cors());
 app.use(express.json());
 
 // APP ROUTES
-app.use("/api", teamRouter);
-app.use("/api", airportRouter);
+app.use("/api", authRouter)
+app.use("/api/airport", airportRouter);
+app.use("/api/team", teamRouter);
 app.use("/api/vendor", vendorRouter);
 
 // GLOBAL ERROR HANDLER

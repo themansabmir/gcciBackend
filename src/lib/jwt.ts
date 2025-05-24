@@ -1,21 +1,21 @@
 import { JWT_SECRET } from '@config/env';
-import jwt, { Secret, SignOptions, VerifyOptions } from "jsonwebtoken";
+import jwt, { Secret, SignOptions, VerifyOptions } from 'jsonwebtoken';
 
-export class JwtService {
+export default class JwtService {
   private secret: Secret;
   private signOptions: SignOptions;
   private verifyOptions: VerifyOptions;
 
   constructor() {
     //  Get JWT secret from environment variables.  Crucial for security.
-    this.secret = JWT_SECRET || "defaultSecret"; // Fallback, but MUST be in .env
+    this.secret = JWT_SECRET || 'defaultSecret'; // Fallback, but MUST be in .env
 
     this.signOptions = {
       expiresIn: '1d',
-      algorithm: "HS256", // Default algorithm
+      algorithm: 'HS256', // Default algorithm
     };
     this.verifyOptions = {
-      algorithms: ["HS256"],
+      algorithms: ['HS256'],
     };
   }
 
@@ -25,10 +25,7 @@ export class JwtService {
    * @param options - Optional signing options.
    * @returns A Promise that resolves to the JWT token string.
    */
-  async generateToken(
-    payload: Record<string, any>,
-    options: SignOptions = {}
-  ): Promise<string> {
+  async generateToken(payload: Record<string, any>, options: SignOptions = {}): Promise<string> {
     const combinedOptions = { ...this.signOptions, ...options };
     return new Promise((resolve, reject) => {
       jwt.sign(payload, this.secret, combinedOptions, (err, token) => {
@@ -37,7 +34,7 @@ export class JwtService {
         } else if (token) {
           resolve(token);
         } else {
-          reject(new Error("Token not generated"));
+          reject(new Error('Token not generated'));
         }
       });
     });
@@ -72,39 +69,38 @@ export class JwtService {
     return jwt.decode(token);
   }
 
-//   /**
-//    * Express.js middleware to authenticate JWT tokens from the Authorization header.
-//    * This is a convenience method to easily protect your routes.
-//    * @param req - Express Request object.
-//    * @param res - Express Response object.
-//    * @param next - Express NextFunction.
-//    */
-//   authenticateToken = async (
-//     req: Request,
-//     res: Response,
-//     next: NextFunction
-//   ) => {
-//     const authHeader = req.headers.authorization;
-//     if (authHeader) {
-//       const token = authHeader.split(" ")[1];
-//       if (token) {
-//         try {
-//           const decoded = await this.verify(token);
+    /**
+     * Express.js middleware to authenticate JWT tokens from the Authorization header.
+     * This is a convenience method to easily protect your routes.
+     * @param req - Express Request object.
+     * @param res - Express Response object.
+     * @param next - Express NextFunction.
+     */
+    // authenticateToken = async (
+    //   req: Request,
+    //   res: Response,
+    //   next: NextFunction
+    // ) => {
+    //   const authHeader = req.headers.authorization;
+    //   if (authHeader) {
+    //     const token = authHeader.split(" ")[1];
+    //     if (token) {
+    //       try {
+    //         const decoded = await this.verify(token);
 
-//           next();
-//         } catch (error) {
-//           // Token is invalid or expired
-//           res.status(401).json({ message: "Invalid or expired token" });
-//         }
-//       } else {
-//         res
-//           .status(401)
-//           .json({ message: "Authorization header is missing the token" });
-//       }
-//     } else {
-//       res.status(401).json({ message: "Authorization header is missing" });
-//     }
-//   };
+    //         next();
+    //       } catch (error) {
+    //         // Token is invalid or expired
+    //         res.status(401).json({ message: "Invalid or expired token" });
+    //       }
+    //     } else {
+    //       res
+    //         .status(401)
+    //         .json({ message: "Authorization header is missing the token" });
+    //     }
+    //   } else {
+    //     res.status(401).json({ message: "Authorization header is missing" });
+    //   }
+    // };
 }
 
-export const jwtService = new JwtService();

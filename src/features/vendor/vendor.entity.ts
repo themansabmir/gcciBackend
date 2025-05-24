@@ -28,4 +28,3 @@ const VendorSchema = new Schema<IVendor>(
 
 export const VendorEntity = model<IVendor>('Vendor', VendorSchema);
 
-VendorSchema.index({ vendor_name: 1 }, { unique: true });

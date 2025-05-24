@@ -1,4 +1,4 @@
-import express from "express";
-const defaultRouter = express.Router();
+import { Router } from 'express';
 
-export default defaultRouter;
+export const defaultRouter = () => Router();
+
