@@ -7,6 +7,7 @@ import {
   QueryOptions,
   PipelineStage,
 } from "mongoose";
+import { IQuery } from "./vendor/vendor.types";
 
 export class BaseRepository<T extends Document> {
   constructor(protected readonly model: Model<T>) {}
@@ -51,5 +52,32 @@ export class BaseRepository<T extends Document> {
 
   aggregate<R = any>(pipeline: PipelineStage[]): Promise<R[]> {
     return this.model.aggregate(pipeline).exec();
+  }
+
+  buildSearchQuery(
+    query: IQuery,
+    searchableFields: string[]
+  ) {
+    const { page = 1, limit = 10, search, sortBy, sortOrder = 'asc' } = query;
+
+    const skip = (page - 1) * limit;
+
+    const filter: any = {};
+    if (search && searchableFields.length > 0) {
+      filter.$or = searchableFields.map((field) => ({
+        [field]: { $regex: search, $options: 'i' },
+      }));
+    }
+
+    const sort: Record<string, 1 | -1> = sortBy
+      ? { [sortBy]: sortOrder === 'asc' ? 1 : -1 }
+      : {};
+
+    return {
+      filter,
+      skip,
+      limit,
+      sort,
+    };
   }
 }

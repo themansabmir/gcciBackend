@@ -7,6 +7,7 @@ import TeamRepository from './team.repository';
 import TeamService from './team.service';
 import { Logger } from '@lib/logger';
 import { IQuery } from '@features/vendor/vendor.types';
+import { ITeam } from './team.types';
 
 class TeamController {
   private teamService;
@@ -25,19 +26,40 @@ class TeamController {
     }
   };
 
-  // public async findTeam(req: Request, res: Response, next: NextFunction) {
-  //   try {
-  //     // const
-  //     const requestParam = req.params;
-  //     const { data, total } = await this.teamService.findAllTeamMembers(req.body);
-  //     return successResponse({ res, response: 'data', message: 'Team Members Fetched Successfully', total: 0 });
-  //   } catch (error) {
-  //     Logger.error('SERVER ERROR', error);
-  //     next(error);
-  //   }
-  // }
+  public updateTeamMember: RequestHandler<{ id: string }, any, ITeam> = async (
+    req: Request<{ id: string }, any, ITeam>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const teamUpdateBody = req.body;
+      const id = req.params?.id;
+      const teamRes = await this.teamService.updateTeamMember(id, teamUpdateBody);
+      return successResponse({ res, response: teamRes, message: 'Team member updated successfully' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public deleteTeamMember: RequestHandler<{ id: string }> = async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params?.id;
+      const teamRes = await this.teamService.deleteTeamMember(id);
+      return successResponse({ res, response: teamRes, message: 'Team member deleted successfully' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public toggleActiveStatus: RequestHandler<{ id: string }> = async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params?.id;
+      const teamRes = await this.teamService.toggleActivateStatus(id);
+      return successResponse({ res, response: teamRes, message: 'Team member status updated successfully' });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
-// const teamRepository = new TeamRepository(TeamEntity)
-// const teamService = new TeamService(teamRepository)
 export const teamController = new TeamController(new TeamService(new TeamRepository(TeamEntity)));

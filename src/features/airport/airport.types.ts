@@ -5,6 +5,4 @@ export interface IAirport extends Document {
   airport_code: String;
 }
 
-export interface update_airport_dto extends IAirport {
-  id: string;
-}
+export type  update_airport_dto= Partial<IAirport>;
