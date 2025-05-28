@@ -34,8 +34,8 @@ class VendorController {
   public findVendors: RequestHandler<{}, any, any, IQuery> = async (req: Request<any, any, any, IQuery>, res: Response, next: NextFunction) => {
     try {
       const query = req.query;
-      const {data, total} = await this.vendorService.findAllVendors(query);
-      res.status(200).json({message:"Vendors data", response: data, total });
+      const {data:response, total} = await this.vendorService.findAllVendors(query);
+      res.status(200).json({message:"Vendors data", response: response, total });
     } catch (error) {
       throw error;
     }
