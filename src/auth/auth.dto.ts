@@ -11,7 +11,6 @@ export const loginschema = z.object({
 export const SignupSchema = z.object({
   username: z.string().min(3).max(30),
   email: z.string().email(),
-  password: z.string().min(8),
   first_name: z.string().max(50),
   last_name: z.string().max(50),
   role: RoleEnum.default('editor'),

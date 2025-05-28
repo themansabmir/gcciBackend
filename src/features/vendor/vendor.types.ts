@@ -1,5 +1,4 @@
-import { Document , } from "mongoose";
-import { ParsedQs } from 'qs';
+import { Document, } from "mongoose";
 
 export const VendorTypeEnum = [
   "cha",

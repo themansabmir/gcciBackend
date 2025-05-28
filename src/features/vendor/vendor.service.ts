@@ -24,10 +24,10 @@ export class VendorService {
     }
   }
 
-  public async updateVendor(vendorUpdateBody: IVendorUpdateBody) {
+  public async updateVendor(_id: string, vendorUpdateBody: IVendorUpdateBody) {
     try {
-      if (!isValidObjectId(vendorUpdateBody.id)) throw new Error('Incorrect DB id');
-      return await this.vendorRepository.updateById(vendorUpdateBody.id, {
+      if (!isValidObjectId(_id)) throw new Error('Invalid Id');
+      return await this.vendorRepository.updateById(_id, {
         ...vendorUpdateBody,
       });
     } catch (error) {

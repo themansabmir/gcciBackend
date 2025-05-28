@@ -20,10 +20,11 @@ class VendorController {
     }
   };
 
-  public updateVendor: RequestHandler<{}, any, IVendor> = async (req: Request, res: Response, next: NextFunction) => {
+  public updateVendor: RequestHandler<{id:string}, any, IVendor> = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const vendorUpdateBody = req.body;
-      const vendorRes = await this.vendorService.updateVendor(vendorUpdateBody);
+      const id=req.params?.id
+      const vendorRes = await this.vendorService.updateVendor(id,vendorUpdateBody);
       res.status(200).json({ message: 'Vendor updated successfully', response: vendorRes });
     } catch (error) {
       next(error);
@@ -33,8 +34,8 @@ class VendorController {
   public findVendors: RequestHandler<{}, any, any, IQuery> = async (req: Request<any, any, any, IQuery>, res: Response, next: NextFunction) => {
     try {
       const query = req.query;
-      const vendorResponse = await this.vendorService.findAllVendors(query);
-      res.status(200).json({ response: vendorResponse });
+      const {data, total} = await this.vendorService.findAllVendors(query);
+      res.status(200).json({message:"Vendors data", response: data, total });
     } catch (error) {
       throw error;
     }

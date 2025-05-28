@@ -1,35 +1,43 @@
 //team.controller.ts
 
-import { NextFunction, Request, RequestHandler, Response } from "express";
+import { successResponse } from '@middleware/successResponse';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
+import TeamEntity from './team.entity';
+import TeamRepository from './team.repository';
 import TeamService from './team.service';
-import { ITeam } from "./team.types";
-import TeamRepository from "./team.repository";
-import TeamEntity from "./team.entity";
-import { loginDTO } from "./team.dto";
+import { Logger } from '@lib/logger';
+import { IQuery } from '@features/vendor/vendor.types';
 
 class TeamController {
   private teamService;
-  constructor(teamService: TeamService) {
-    this.teamService = teamService;
+  constructor(serviceLayer: TeamService) {
+    this.teamService = serviceLayer;
   }
 
-  public createTeam: RequestHandler<{}, any, ITeam> = async (req: Request<{}, any, ITeam>, res: Response, next: NextFunction) => {
+  public findTeam: RequestHandler<{}, any, any, IQuery> = async (req: Request<{}, any, any, IQuery>, res: Response, next: NextFunction) => {
     try {
-      const teamBody = req.body;
-      const teamRes = await this.teamService.createTeamMemeber(teamBody);
-      res.status(200).json({ message: 'Team created successfully', response: teamRes });
+      const query = req.query;
+      const { data, total } = await this.teamService.findAllTeamMembers(query);
+      return successResponse({ res, response: data, message: 'Team Members Fetched Successfully', total });
     } catch (error) {
-      throw error;
+      Logger.error('SERVER ERROR', error);
+      next(error);
     }
   };
 
-  public login: RequestHandler<{}, any, loginDTO> = async (req:Request, res:Response, next:NextFunction) => {
-    const loginBody = req.body
-    const {} = await this.teamService.login(loginBody)
-
-  }
+  // public async findTeam(req: Request, res: Response, next: NextFunction) {
+  //   try {
+  //     // const
+  //     const requestParam = req.params;
+  //     const { data, total } = await this.teamService.findAllTeamMembers(req.body);
+  //     return successResponse({ res, response: 'data', message: 'Team Members Fetched Successfully', total: 0 });
+  //   } catch (error) {
+  //     Logger.error('SERVER ERROR', error);
+  //     next(error);
+  //   }
+  // }
 }
 
-const teamRepository = new TeamRepository(TeamEntity)
-const teamService = new TeamService(teamRepository)
-export const teamController = new TeamController(teamService)
+// const teamRepository = new TeamRepository(TeamEntity)
+// const teamService = new TeamService(teamRepository)
+export const teamController = new TeamController(new TeamService(new TeamRepository(TeamEntity)));

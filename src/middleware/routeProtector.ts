@@ -35,6 +35,7 @@ export const permissionCheck = (permission: string) => {
     try {
       const user = req.user;
       Logger.info('Decoded User', user);
+      if(user?.role ==='admin') return next();
       const available_permissions = user?.permissions;
       if (!available_permissions?.length || available_permissions.length < 1 || !available_permissions?.includes(permission))
         throw new Error('Please ask system administrator to grant you permission');

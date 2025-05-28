@@ -17,11 +17,11 @@ export default class AuthService {
   private async profileValidation(findBy: { email?: string; _id?: string }, password: string) {
     const isAccount = await this.teamRepository.findOne(findBy);
     if (!isAccount) throw new Error('User does not exist');
-    Logger.info("Account trying to login",{ user:isAccount?.email})
+    Logger.info('Account trying to login', { user: isAccount?.email });
     if (!isAccount.is_active) throw new Error('Your profile is temporarily disabled by system administrator');
     const isPasswordValid = await this.bcryptService.compare(password, isAccount.password);
     if (!isPasswordValid) throw new Error('Invalid credentials');
-    return
+    return;
   }
 
   public async login(loginBody: LoginBody) {
