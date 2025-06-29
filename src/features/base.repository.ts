@@ -1,13 +1,5 @@
-import {
-  Document,
-  FilterQuery,
-  Model,
-  Query,
-  UpdateQuery,
-  QueryOptions,
-  PipelineStage,
-} from "mongoose";
-import { IQuery } from "./vendor/vendor.types";
+import { Document, FilterQuery, Model, Query, UpdateQuery, QueryOptions, PipelineStage } from 'mongoose';
+import { IQuery } from './vendor/vendor.types';
 
 export class BaseRepository<T extends Document> {
   constructor(protected readonly model: Model<T>) {}
@@ -30,12 +22,12 @@ export class BaseRepository<T extends Document> {
     return doc.save();
   }
 
-  updateById(
-    id: string,
-    update: UpdateQuery<T>,
-    options: QueryOptions = { new: true }
-  ): Query<T | null, T> {
+  updateById(id: string, update: UpdateQuery<T>, options: QueryOptions = { new: true }): Query<T | null, T> {
     return this.model.findByIdAndUpdate(id, update, options);
+  }
+
+  updateOneByQuery(query: FilterQuery<T>, update: UpdateQuery<T>, options: QueryOptions = { new: true }) {
+    return this.model.findOneAndUpdate(query, update, options);
   }
 
   deleteById(id: string): Query<T | null, T> {
@@ -54,10 +46,7 @@ export class BaseRepository<T extends Document> {
     return this.model.aggregate(pipeline).exec();
   }
 
-  buildSearchQuery(
-    query: IQuery,
-    searchableFields: string[]
-  ) {
+  buildSearchQuery(query: IQuery, searchableFields: string[]) {
     const { page = 1, limit = 10, search, sortBy, sortOrder = 'asc' } = query;
 
     const skip = (page - 1) * limit;
@@ -69,9 +58,7 @@ export class BaseRepository<T extends Document> {
       }));
     }
 
-    const sort: Record<string, 1 | -1> = sortBy
-      ? { [sortBy]: sortOrder === 'asc' ? 1 : -1 }
-      : {};
+    const sort: Record<string, 1 | -1> = sortBy ? { [sortBy]: sortOrder === 'asc' ? 1 : -1 } : { createdAt: -1 };
 
     return {
       filter,

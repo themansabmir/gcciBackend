@@ -5,11 +5,7 @@ import { Logger } from '@lib/logger';
 
 const jwtService = new JwtService(); // Create once, not per request
 
-export async function routeProtector(
-  req: Request<any, any, any>, // Use the generic Request type
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
+export async function validateToken(req: Request<any, any, any>, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -23,9 +19,14 @@ export async function routeProtector(
     const decoded = (await jwtService.verify(token)) as unknown as JWT_PAYLOAD;
     if (!decoded.is_active) throw new Error('Your profile is not active anymore');
 
+    if (req.body) {
+      req.body['created_by'] = decoded?.id;
+    }
+
     req.user = decoded;
     next();
   } catch (error) {
+    Logger.error('Invalid or expired token', error);
     res.status(401).json({ message: 'Invalid or expired token' });
   }
 }
@@ -35,7 +36,7 @@ export const permissionCheck = (permission: string) => {
     try {
       const user = req.user;
       Logger.info('Decoded User', user);
-      if(user?.role ==='admin') return next();
+      if (user?.role === 'admin') return next();
       const available_permissions = user?.permissions;
       if (!available_permissions?.length || available_permissions.length < 1 || !available_permissions?.includes(permission))
         throw new Error('Please ask system administrator to grant you permission');

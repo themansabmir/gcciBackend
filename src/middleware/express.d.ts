@@ -3,7 +3,7 @@ import { Request } from 'express';
 
 
 export interface JWT_PAYLOAD {
-  id: string;
+  _id: string;
   email: string;
     role: string;
     is_active: boolean;

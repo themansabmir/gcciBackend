@@ -34,5 +34,6 @@ export interface IQuery  {
   sortBy?: string;
   sortOrder?: string;
   search?: string;
+  [key: string]: any;
 }
 export type IVendorUpdateBody = Partial<IVendor>;
