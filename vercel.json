@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "src/app.ts",
+      "src": "src/index.ts",
       "use": "@vercel/node",
       "config": {
         "includeFiles": ["dist/**"]
@@ -15,5 +15,5 @@
       "dest": "src/app.ts"
     }
   ],
-  "buildCommand": "npm run build" 
+  "buildCommand": "npm run build"
 }
