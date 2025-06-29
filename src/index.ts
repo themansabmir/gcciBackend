@@ -11,7 +11,7 @@ let server: http.Server;
 
 async function startServer() {
   try {
-    await connectToDatabase();
+    // await connectToDatabase();
 
     server = app.listen(PORT, () => {
       console.log(`🚀 Server running at http://localhost:${PORT}`);
