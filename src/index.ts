@@ -1,6 +1,7 @@
 // ────────────────────────────────────────────────────────────
 // src/index.ts   (entry for both local & Vercel)
 // ────────────────────────────────────────────────────────────
+import 'tsconfig-paths/register';
 import http from 'http';
 import dotenv from 'dotenv';
 
