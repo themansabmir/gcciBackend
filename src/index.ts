@@ -1,53 +1,68 @@
-// src/server.ts
-import http from "http";
-import app from "./app";
-import { connectToDatabase } from "./config/db";
-import dotenv from "dotenv";
+// ────────────────────────────────────────────────────────────
+// src/index.ts   (entry for both local & Vercel)
+// ────────────────────────────────────────────────────────────
+import http from 'http';
+import dotenv from 'dotenv';
+
+import app from './app';
+import { connectToDatabase } from './config/db';
 
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
-let server: http.Server;
+const PORT = Number(process.env.PORT) || 3000;
 
-async function startServer() {
-  try {
-    // await connectToDatabase();
+/**
+ * 1.  Always export the Express instance.
+ *     ↪︎  Vercel’s @vercel/node builder will wrap it inside
+ *        a serverless handler automatically.
+ */
+export default app;
 
-    server = app.listen(PORT, () => {
-      console.log(`🚀 Server running at http://localhost:${PORT}`);
-    });
+/**
+ * 2.  Only create an HTTP server **when NOT on Vercel**.
+ *     Vercel sets the env‑var `VERCEL=true`.
+ */
+if (!process.env.VERCEL) {
+  let server: http.Server;
 
-    // Handle unexpected errors
-    process.on("unhandledRejection", (reason) => {
-      console.error("UNHANDLED REJECTION:", reason);
+  (async () => {
+    try {
+      // Optional: connect to DB only for long‑lived local server.
+      // await connectToDatabase();
+
+      server = app.listen(PORT, () => {
+        console.log(`🚀  Server running at http://localhost:${PORT}`);
+      });
+
+      // ── Runtime‑error guards ───────────────────────────────
+      process.on('unhandledRejection', (reason) => {
+        console.error('UNHANDLED REJECTION:', reason);
+        shutdown(1);
+      });
+
+      process.on('uncaughtException', (error) => {
+        console.error('UNCAUGHT EXCEPTION:', error);
+        shutdown(1);
+      });
+
+      // ── Graceful shutdown signals ─────────────────────────
+      ['SIGINT', 'SIGTERM'].forEach((sig) => process.on(sig, () => shutdown(0)));
+    } catch (err) {
+      console.error('❌  Error starting server:', err);
       shutdown(1);
-    });
+    }
 
-    process.on("uncaughtException", (error) => {
-      console.error("UNCAUGHT EXCEPTION:", error);
-      shutdown(1);
-    });
-
-    // Handle graceful shutdown
-    process.on("SIGINT", () => shutdown(0)); // Ctrl+C
-    process.on("SIGTERM", () => shutdown(0)); // kill process
-  } catch (err) {
-    console.error("❌ Error starting server:", err);
-    shutdown(1);
-  }
+    function shutdown(code: number) {
+      console.log('🛑  Shutting down...');
+      if (server) {
+        server.close(() => {
+          console.log('✅  HTTP server closed');
+          // Optionally close DB connections here
+          process.exit(code);
+        });
+      } else {
+        process.exit(code);
+      }
+    }
+  })();
 }
-
-function shutdown(code: number) {
-  console.log("🛑 Shutting down...");
-  if (server) {
-    server.close(() => {
-      console.log("✅ HTTP server closed");
-      // Optional: close DB connection here
-      process.exit(code);
-    });
-  } else {
-    process.exit(code);
-  }
-}
-
-startServer();
