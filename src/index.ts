@@ -22,7 +22,7 @@ export default app;
  * 2.  Only create an HTTP server **when NOT on Vercel**.
  *     Vercel sets the env‑var `VERCEL=true`.
  */
-if (!process.env.VERCEL) {
+if (false) {
   let server: http.Server;
 
   (async () => {
