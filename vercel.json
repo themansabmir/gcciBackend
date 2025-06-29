@@ -5,10 +5,10 @@
 
   "builds": [
     {
-      "src": "dist/index.js",
+      "src": "dist/app.js",
       "use": "@vercel/node"
     }
   ],
 
-  "routes": [{ "src": "/(.*)", "dest": "dist/index.js" }]
+  "routes": [{ "src": "/(.*)", "dest": "dist/app.js" }]
 }
