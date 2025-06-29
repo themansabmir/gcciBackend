@@ -22,6 +22,9 @@ app.use(cors());
 
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.status(200).json({ message: 'GCO Backend API is running!' });
+});
 // APP ROUTES
 app.use('/api', authRouter);
 app.use('/api/shipment', validateToken, shipmentRouter);
