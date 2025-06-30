@@ -1,7 +1,6 @@
 // src/common/middleware/errorHandler.ts
 import { Logger } from '@lib/logger';
 import { Request, Response, NextFunction } from 'express';
-// import { AppError } from "../errors/AppError";
 import mongoose from 'mongoose';
 
 export const errorHandler = (err: Error, req: Request, res: Response, _next: NextFunction) => {

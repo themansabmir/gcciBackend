@@ -1,13 +1,13 @@
 // src/types/express.d.ts
-import { Request } from 'express';
 
+// No 'import { Request } from 'express';' at the top here!
 
 export interface JWT_PAYLOAD {
   _id: string;
   email: string;
-    role: string;
-    is_active: boolean;
-    permissions:string[]
+  role: string;
+  is_active: boolean;
+  permissions: string[];
   [key: string]: any;
 }
 
