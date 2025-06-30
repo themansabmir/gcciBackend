@@ -1,5 +1,6 @@
-import mongoose from "mongoose";
-import { MONGO_URI, ENV } from "./env";
+import mongoose from 'mongoose';
+import { MONGO_URI, ENV } from './env';
+import { log } from 'console';
 
 export const connectToDatabase = async (): Promise<void> => {
   try {
@@ -16,6 +17,6 @@ export const disconnectDB = async (): Promise<void> => {
     await mongoose.disconnect();
     console.log(`🔌 MongoDB disconnected (${ENV})`);
   } catch (err) {
-    console.error("Error during MongoDB disconnect:", err);
+    console.error('Error during MongoDB disconnect:', err);
   }
 };

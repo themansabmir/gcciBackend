@@ -25,7 +25,6 @@ class ShipmentController {
   public findAll: RequestHandler<{}, any, any, IQuery> = async (req: Request<{}, any, any, IQuery>, res: Response, next: NextFunction) => {
     try {
       const query = req.query;
-      console.log(query.shipment_type);
       const { data, total } = await this.shipmentService.getAllShipments(query);
       successResponse({ res, response: data, message: 'Shipments Fetched Successfully', total });
     } catch (error) {
