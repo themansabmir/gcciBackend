@@ -12,6 +12,8 @@ let server: http.Server;
 
 (async () => {
   try {
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('MONGODB_URI:', process.env.MONGODB_URI);
     await connectToDatabase();
 
     server = app.listen(PORT, () => {
