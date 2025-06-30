@@ -1,11 +1,10 @@
 // src/index.ts
 // library imports
-import 'tsconfig-paths/register';
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 // ALL MIDDLEWARES
-import { errorHandler } from '@middleware/error-handler';
+// import { errorHandler } from '@middleware/error-handler';
 
 // ALL FEATURE ROUTES
 import teamRouter from '@features/team/team.route';
@@ -36,6 +35,6 @@ app.use('/api/port', portRouter);
 app.use('/api/mbl', validateToken, mblRouter);
 
 // GLOBAL ERROR HANDLER
-app.use(errorHandler);
+// app.use(errorHandler);
 
 export default app;
