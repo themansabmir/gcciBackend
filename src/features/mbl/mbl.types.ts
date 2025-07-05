@@ -8,6 +8,11 @@ export enum ShipmentMode {
   SEA = 'sea',
   AIR = 'air',
 }
+
+export enum MOVEMENT_TYPE {
+  RAIL= 'RAIL',
+  ROAD= 'ROAD',
+}
 export enum ShipmentType {
   FCL = 'FCL',
   LCL = 'LCL',
@@ -54,14 +59,26 @@ export interface IContainer {
   gross_weight: string;
   net_weight: string;
   volume: string;
+  arrival_pol_date: string;
+  container_pickup_date: string;
+  container_handover_date: string;
+  rail_out_date: string;
+  gate_in_date: string;
+  arrival_fpod_date: string;
+  delivery_order_date: string;
+  delivery_validity_date: string;
 }
 
 export interface IMbl extends Document {
   shipment_folder_id: ObjectId;
   movement_type: string;
+  shipping_bill: Array<{ shipping_bill_number: string; shipping_bill_date: string }>;
+  bill_of_entry: Array<{ bill_of_entry_number: string; bill_of_entry_date: string }>;
   etd_fpod: string;
   etd_pol: string;
+  extra_free_time: string;
   shipment_mode: ShipmentMode;
+  ata_pod: string;
   shipment_type: ShipmentType;
   trade_type: TradeType;
   booking_number: string;
@@ -73,8 +90,13 @@ export interface IMbl extends Document {
   consignee_address: ObjectId;
   notify: ObjectId;
   notify_address: ObjectId;
-  agent: ObjectId;
-  agent_address: ObjectId;
+  second_notify: ObjectId;
+  second_notify_address: ObjectId;
+  agent_origin: ObjectId;
+  agent_origin_address: ObjectId;
+  agent_destination: ObjectId;
+  agent_destination_address: ObjectId;
+
   shipping_line: ObjectId;
   mbl_number: string;
   mbl_date: String;
@@ -91,13 +113,15 @@ export interface IMbl extends Document {
   eta_pod: String;
   shipping_bill_number: string;
   shipping_bill_date: String;
-  bill_of_entry: string;
-  bill_of_entry_date: String;
 
-  free_time_pol: string;
-  free_time_pod: string;
+  free_time_origin: string;
+  free_time_destination: string;
   exchange_rate: string;
+  vessel_number: string;
+  marks_numbers: string;
 
+  description_of_goods: string;
+  place_carriage: string;
   containers: IContainer[];
 
   created_by: ObjectId;
