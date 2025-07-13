@@ -15,6 +15,7 @@ import portRouter from '@features/port/port.route';
 import shipmentRouter from '@features/shipment/shipment.router';
 import { validateToken } from '@middleware/routeProtector';
 import mblRouter from '@features/mbl/mbl.route';
+import mediaRouter from '@features/media/media.router';
 dotenv.config();
 
 const app = express();
@@ -33,6 +34,7 @@ app.use('/api/vendor', vendorRouter);
 app.use('/api/airport', airportRouter);
 app.use('/api/port', portRouter);
 app.use('/api/mbl', validateToken, mblRouter);
+app.use('/api/media', validateToken, mediaRouter);
 
 // GLOBAL ERROR HANDLER
 // app.use(errorHandler);

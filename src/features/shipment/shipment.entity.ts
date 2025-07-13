@@ -20,6 +20,12 @@ const shipmentEntity = new Schema<IShipment>(
       required: true,
       enum: ['IMP', 'EXP'],
     },
+    media: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Media',
+      },
+    ],
   },
   {
     timestamps: true,
