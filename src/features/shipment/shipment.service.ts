@@ -9,7 +9,7 @@ export default class ShipmentService {
     this.shipmentRepository = shipmentRepository;
   }
 
-  private async getShipmentFolderName(prefix: string): Promise<string> {
+  public async getShipmentFolderName(prefix: string): Promise<string> {
     try {
       const counter = await ShipmentCounterEntity.findOneAndUpdate(
         { _id: prefix }, // filter by prefix like 'IMP' or 'EXP'

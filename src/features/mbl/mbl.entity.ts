@@ -3,7 +3,6 @@ import {
   CONTAINER_SIZE,
   CONTAINER_TYPE,
   FREIGHT_TYPE,
-  IContainer,
   IMbl,
   INCOTERM,
   MBL_Type,
@@ -14,7 +13,7 @@ import {
 } from './mbl.types';
 const { ObjectId } = Schema.Types;
 
-const ShippingBillSchema = new Schema(
+export const ShippingBillSchema = new Schema(
   {
     shipping_bill_number: { type: String, required: true, trim: true },
     shipping_bill_date: { type: Date, required: true },
@@ -22,7 +21,7 @@ const ShippingBillSchema = new Schema(
   { _id: false } // don’t create an _id for each sub‑doc
 );
 
-const BillOfEntrySchema = new Schema(
+export const BillOfEntrySchema = new Schema(
   {
     bill_of_entry_number: { type: String, required: true, trim: true },
     bill_of_entry_date: { type: Date, required: true },
@@ -31,7 +30,7 @@ const BillOfEntrySchema = new Schema(
 );
 
 // --- container --------------------------------------------------
-const ContainerSchema = new Schema(
+export const ContainerSchema = new Schema(
   {
     container_number: { type: String, trim: true },
     line_seal: { type: String },
@@ -61,9 +60,8 @@ const ContainerSchema = new Schema(
   { _id: false }
 );
 
-// --- master MBL -------------------------------------------------
-const mblEntity = new Schema(
-  {
+export const CommonFields = {
+  shipment_details: {
     shipment_folder_id: { type: ObjectId, required: true, ref: 'Shipment' },
 
     shipment_mode: { type: String, enum: Object.values(ShipmentMode) },
@@ -73,9 +71,9 @@ const mblEntity = new Schema(
 
     booking_number: { type: String, trim: true },
     mbl_type: { type: String, enum: Object.values(MBL_Type) },
+  },
 
-    // --- vendor refs ---
-    shipping_line: { type: ObjectId, ref: 'Vendor' },
+  vendor_refs: {
     shipper: { type: ObjectId, ref: 'Vendor' },
     shipper_address: { type: ObjectId },
     consignee: { type: ObjectId, ref: 'Vendor' },
@@ -84,16 +82,16 @@ const mblEntity = new Schema(
     notify_address: { type: ObjectId },
     second_notify: { type: ObjectId, ref: 'Vendor' },
     second_notify_address: { type: ObjectId },
+    shipping_line: { type: ObjectId, ref: 'Vendor' },
 
     agent_origin: { type: ObjectId, ref: 'Vendor' },
     agent_origin_address: { type: ObjectId },
     agent_destination: { type: ObjectId, ref: 'Vendor' },
     agent_destination_address: { type: ObjectId },
+  },
 
+  port_info: {
     place_carriage: { type: String },
-    mbl_number: { type: String },
-    mbl_date: { type: Date },
-
     place_of_receipt: { type: String, ref: 'Port' },
     place_of_delivery: { type: String, ref: 'Port' },
     port_of_loading: { type: ObjectId, ref: 'Port' },
@@ -101,32 +99,48 @@ const mblEntity = new Schema(
     voyage_number: { type: String },
     vessel_number: { type: String },
     transhipment_port: { type: ObjectId, ref: 'Port' },
+  },
 
-    marks_numbers: { type: String },
-    description_of_goods: { type: String },
-
+  freight_info: {
     incoterm: { type: String, enum: Object.values(INCOTERM) },
     freight_type: { type: String, enum: Object.values(FREIGHT_TYPE) },
     exchange_rate: { type: Number },
+  },
 
+  dates: {
     sob_date: { type: Date },
     eta_pod: { type: String },
+    etd_pol: { type: Date },
+    etd_fpod: { type: Date },
+    ata_pod: { type: Date },
+  },
 
-    // --- conditional fields (arrays w/ sub‑schemas) ---
+  free_time: {
+    free_time_origin: { type: Number },
+    free_time_destination: { type: Number },
+    extra_free_time: { type: Number },
+  },
+};
+
+// --- master MBL -------------------------------------------------
+const mblEntity = new Schema(
+  {
+    ...CommonFields.shipment_details,
+    ...CommonFields.vendor_refs,
+    ...CommonFields.port_info,
+    ...CommonFields.freight_info,
+    ...CommonFields.dates,
+    ...CommonFields.free_time,
+    mbl_number: { type: String },
+    mbl_date: { type: Date },
+    marks_numbers: { type: String },
+    description_of_goods: { type: String },
+
     shipping_bill: { type: [ShippingBillSchema], default: [] },
     bill_of_entry: { type: [BillOfEntrySchema], default: [] },
 
-    free_time_origin: { type: Number }, // maybe store as days?
-    free_time_destination: { type: Number },
-    extra_free_time: { type: Number },
-
-    etd_pol: { type: Date },
-    etd_fpod: { type: Date }, // export rail/road only
-    ata_pod: { type: Date }, // import rail only
-
-    created_by: { type: ObjectId, ref: 'Team' },
-
     containers: { type: [ContainerSchema], default: [] },
+    created_by: { type: Schema.Types.ObjectId, ref: 'Team' },
   },
   { timestamps: true }
 );

@@ -30,9 +30,13 @@ class ShipmentController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  public findById: RequestHandler<{ id: string }, any, any, any> = async (req: Request<{ id: string }, any, any, any>, res: Response, next: NextFunction) => {
+  public findById: RequestHandler<{ id: string }, any, any, any> = async (
+    req: Request<{ id: string }, any, any, any>,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const id = req.params?.id;
       const shipmentRes = await this.shipmentService.findById(id);
@@ -40,8 +44,9 @@ class ShipmentController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 }
 
-const shipmentService = new ShipmentRepository(ShipmentEntity);
-export const shipmentController = new ShipmentController(new ShipmentService(shipmentService));
+const shipmentRepo = new ShipmentRepository(ShipmentEntity);
+export const shipmentService = new ShipmentService(shipmentRepo);
+export const shipmentController = new ShipmentController(shipmentService);
