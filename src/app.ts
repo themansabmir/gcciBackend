@@ -16,6 +16,7 @@ import shipmentRouter from '@features/shipment/shipment.router';
 import { validateToken } from '@middleware/routeProtector';
 import mblRouter from '@features/mbl/mbl.route';
 import hblRouter from '@features/hbl/hbl.router';
+import proformaInvoiceRouter from '@features/proforma-invoice/proforma-invoice.route';
 dotenv.config();
 
 const app = express();
@@ -35,6 +36,7 @@ app.use('/api/airport', airportRouter);
 app.use('/api/port', portRouter);
 app.use('/api/mbl', mblRouter);
 app.use('/api/hbl', hblRouter);
+app.use('/api/proforma-invoice', validateToken, proformaInvoiceRouter);
 
 // GLOBAL ERROR HANDLER
 // app.use(errorHandler);
