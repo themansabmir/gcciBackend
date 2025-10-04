@@ -24,6 +24,7 @@ interface ILocation {
 export interface IVendor extends Document {
   vendor_name: string;
   vendor_type: typeof VendorTypeEnum;
+  credit_days: string;
   locations: ILocation[];
 }
 

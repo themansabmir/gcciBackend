@@ -8,6 +8,6 @@ const authRouter = defaultRouter()
 
 
 authRouter.post("/login", validateDTO(loginschema), authController.login)
-authRouter.post('/sign-up', validateToken, permissionCheck("team_create"), validateDTO(SignupSchema), authController.signup);
+authRouter.post('/sign-up',  validateDTO(SignupSchema), authController.signup);
 authRouter.put("/update-password/:id", validateToken, validateDTO(updatePasswordSchema), authController.updatePassword)
 export default authRouter;

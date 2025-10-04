@@ -16,6 +16,9 @@ import shipmentRouter from '@features/shipment/shipment.router';
 import { validateToken } from '@middleware/routeProtector';
 import mblRouter from '@features/mbl/mbl.route';
 import hblRouter from '@features/hbl/hbl.router';
+import { errorHandler } from '@middleware/error-handler';
+import invoiceItemRouter from '@features/invoicefield/invoiceitem.route';
+import financeRouter from '@features/finance/finance.route';
 dotenv.config();
 
 const app = express();
@@ -29,14 +32,15 @@ app.get('/', (req, res) => {
 // APP ROUTES
 app.use('/api', authRouter);
 app.use('/api/shipment', validateToken, shipmentRouter);
-app.use('/api/team', teamRouter);
-app.use('/api/vendor', vendorRouter);
-app.use('/api/airport', airportRouter);
-app.use('/api/port', portRouter);
-app.use('/api/mbl', mblRouter);
-app.use('/api/hbl', hblRouter);
-
+app.use('/api/team', validateToken, teamRouter);
+app.use('/api/vendor', validateToken, vendorRouter);
+app.use('/api/airport', validateToken, airportRouter);
+app.use('/api/port', validateToken, portRouter);
+app.use('/api/mbl', validateToken, mblRouter);
+app.use('/api/hbl', validateToken, hblRouter);
+app.use('/api/invoiceitem', validateToken, invoiceItemRouter)
+app.use('/api/finance', financeRouter)
 // GLOBAL ERROR HANDLER
-// app.use(errorHandler);
+app.use(errorHandler);
 
 export default app;

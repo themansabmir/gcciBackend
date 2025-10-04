@@ -18,6 +18,7 @@ const VendorSchema = new Schema<IVendor>(
   {
     vendor_name: { type: String, required: true, unique: true, trim: true },
     vendor_type: { type: [String], enum: VendorTypeEnum, required: true },
+    credit_days: { type: String, required: true },
     locations: {
       type: [LocationSchema],
       required: true,
