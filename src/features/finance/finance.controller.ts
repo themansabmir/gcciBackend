@@ -1,6 +1,6 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import FinanceService from './finance.service';
-import { IFinanceDocument } from './finance.types';
+import { IFinanceDocument, ILineItem } from './finance.types';
 import { successResponse } from '@middleware/successResponse';
 import { IQuery } from '@features/vendor/vendor.types';
 import { Logger } from '@lib/logger';
@@ -17,6 +17,13 @@ class FinanceController {
   public createFinanceDocument: RequestHandler<{}, any, IFinanceDocument> = async (req: Request<{}, any, IFinanceDocument>, res: Response, next: NextFunction) => {
     try {
       const financeBody = req.body;
+      const  {lineItems} = financeBody
+      lineItems.forEach(row => {
+        if (!row.serviceItem || row.quantity <= 0 || row.rate < 0 || !row.rate || !row.quantity || !row.serviceItem) {
+          throw new Error(`Invalid row data for serviceItem ${row.serviceItem}`);
+        }
+      });
+      
       const financeRes = await this.financeService.createFinanceDocument(financeBody);
 
       res.status(200).json({ message: 'Finance Document Created Successfully', response: financeRes });
@@ -60,6 +67,20 @@ class FinanceController {
       const id = req.params?.id;
       const financeRes = await this.financeService.deleteFinanceDocument(id);
       successResponse({ res, response: financeRes, message: 'Finance Document deleted successfully' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getFinanceDocumentById: RequestHandler<{ id: string }, any, any> = async (
+    req: Request<{ id: string }, any, any>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const id = req.params?.id;
+      const financeRes = await this.financeService.getFinanceDocumentById(id);
+      successResponse({ res, response: financeRes, message: 'Finance Document fetched successfully' });
     } catch (error) {
       next(error);
     }

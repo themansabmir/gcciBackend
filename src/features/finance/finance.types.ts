@@ -23,12 +23,29 @@ export interface ILineItem {
     totalWithGst: number;
 }
 
+export interface IBillingPartySnapshot {
+    name: string;
+    gst_number: string;
+    email: string;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    vendor_name: string;
+    mobile_number: string;
+    pin_code: string;
+    pan_number: string;
+}
+
 // Interface for the finance document
 export interface IFinanceDocument extends Document {
     shipmentId: ObjectId;
+    document: ObjectId, 
+    docType: "HBL" | "MBL";
     customerId: ObjectId;
     parentDocumentId?: ObjectId;
     locationId?: string;
+    billingPartySnapshot: IBillingPartySnapshot;
 
     //
     type: FinanceDocumentType;

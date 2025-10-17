@@ -45,6 +45,21 @@ class ShipmentController {
       next(error);
     }
   };
+
+
+  public findDocumentsByShipmentId: RequestHandler<{ id: string }, any, any, any> = async (
+    req: Request<{ id: string }, any, any, any>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const id = req.params?.id;
+      const shipmentRes = await this.shipmentService.findDocumentsByShipmentId(id);
+      successResponse({ res, response: shipmentRes, message: 'Shipment Fetched Successfully' });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 const shipmentRepo = new ShipmentRepository(ShipmentEntity);

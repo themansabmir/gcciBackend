@@ -25,7 +25,7 @@ class MblService {
   }
   async findByFolderId(id: string) {
     try {
-      return await this.mblRepository.findOne({ shipment_folder_id: id }).populate({ path: 'shipment_folder_id', select: 'shipment_name -_id' });
+      return await this.mblRepository.findOne({ shipment_folder_id: id }).populate({ path: 'shipment_folder_id', select: 'shipment_name -_id' }).populate({path: 'billing_party'});
     } catch (error) {
       throw error;
     }

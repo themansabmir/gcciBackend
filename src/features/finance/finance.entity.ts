@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
-import { IFinanceDocument } from "./finance.types";
+import { IBillingPartySnapshot, IFinanceDocument } from "./finance.types";
 
 const { Schema } = mongoose;
 const lineItemSchema = new Schema(
     {
         serviceItem: { type: String, required: true },
-        hsn: { type: String },
+        itemId:{type:String},
+        hsn_code: { type: String },
 
         rate: { type: Number, default: 0 },          // base rate
         currency: { type: String, default: "INR" },
@@ -26,11 +27,28 @@ const lineItemSchema = new Schema(
     { _id: false }
 );
 
+// ✅ Snapshot of billing party info
+const billingPartySnapshotSchema = new Schema<IBillingPartySnapshot>(
+    {
+        city: { type: String, required: true },
+        address: { type: String, required: true },
+        state: { type: String, required: true },
+        country: { type: String, required: true },
+        pin_code: { type: String, required: true },
+        mobile_number: { type: String, required: true },
+        gst_number: { type: String, required: true },
+        pan_number: { type: String, required: true },
+        vendor_name: { type: String, required: true },
+    },
+    { _id: false }
+);
+
 const financeDocumentSchema = new Schema<IFinanceDocument>(
     {
         shipmentId: { type: Schema.Types.ObjectId, ref: "Shipment", required: true },
-        customerId: { type: Schema.Types.ObjectId, ref: "Vendor", required: true },
-        locationId: { type: String },
+        document: { type: Schema.Types.ObjectId, refPath:'docType', required: true },
+        docType: { type: String, enum: ["HBL", "Mbl"], required: true },
+        billingPartySnapshot: { type: billingPartySnapshotSchema },
 
         type: {
             type: String,

@@ -75,6 +75,8 @@ export const CommonFields = {
 
   vendor_refs: {
     shipper: { type: ObjectId, ref: 'Vendor' },
+    billing_party: { type: ObjectId, ref: 'Vendor' },
+    billing_party_address: { type: ObjectId },
     shipper_address: { type: ObjectId },
     consignee: { type: ObjectId, ref: 'Vendor' },
     consignee_address: { type: ObjectId },

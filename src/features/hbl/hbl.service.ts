@@ -30,6 +30,6 @@ export default class HblService {
   }
 
   async getAllHblByShipmentId(shipment_folder_id: string) {
-    return await this.hblRepository.find({ shipment_folder_id });
+    return await this.hblRepository.find({ shipment_folder_id }).populate({path: 'billing_party'});
   }
 }

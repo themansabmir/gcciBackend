@@ -8,6 +8,7 @@ const jwtService = new JwtService(); // Create once, not per request
 export async function validateToken(req: Request<any, any, any>, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers.authorization;
 
+  'Bearer 234234232342342342'
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.status(401).json({ message: 'Authorization header missing or invalid' });
     return;

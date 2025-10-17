@@ -52,5 +52,5 @@ class HblController {
 
 
 const hblRepository = new HBLRepository(HBLEntity)
-const hblService  = new HblService(hblRepository)
+export const hblService  = new HblService(hblRepository)
 export const hblCtrl = new HblController(hblService)

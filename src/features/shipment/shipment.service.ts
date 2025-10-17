@@ -2,6 +2,8 @@ import { IQuery } from '@features/vendor/vendor.types';
 import { ShipmentCounterEntity } from './shipment.entity';
 import ShipmentRepository from './shipment.repository';
 import { IShipment, IShipmentQuery } from './shipment.types';
+import { mblService } from '@features/mbl/mbl.controller';
+import { hblService } from '@features/hbl/hbl.controller';
 
 export default class ShipmentService {
   private shipmentRepository;
@@ -48,7 +50,8 @@ export default class ShipmentService {
       if (query.shipment_type) {
         filter['shipment_type'] = query.shipment_type;
       }
-      const data = await this.shipmentRepository.find(filter).sort(sort);
+      console.group('filter', filter, query)
+      const data = await this.shipmentRepository.find(filter).sort(sort).limit(limit).skip(skip);
       const total = await this.shipmentRepository.count(filter);
       return { data, total };
     } catch (error) {
@@ -59,6 +62,23 @@ export default class ShipmentService {
   public async findById(id: string) {
     try {
       return await this.shipmentRepository.findById(id).populate({path:'created_by', select: 'first_name last_name createdAt -_id'});
+    } catch (error) {
+      throw error;
+    }
+  }
+
+
+  /* 
+  @param: id
+  @returns: all mbl and hbl documents related to this shipment id.
+  */
+
+  public async findDocumentsByShipmentId(id: string) {
+    try {
+     const mblDocument= await mblService.findByFolderId(id);
+     const hblDocument= await hblService.getAllHblByShipmentId(id);
+     const response = hblDocument?.length > 0 ? hblDocument : [mblDocument];
+      return response;
     } catch (error) {
       throw error;
     }

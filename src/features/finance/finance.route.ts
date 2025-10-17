@@ -5,9 +5,10 @@ import { financeController } from './finance.controller';
 
 const financeRouter = defaultRouter();
 
-financeRouter.post('/', validateDTO(finance_validate), financeController.createFinanceDocument);
+financeRouter.post('/',  financeController.createFinanceDocument);
 financeRouter.get('/', financeController.getAllFinanceDocuments);
-financeRouter.put('/:id', validateDTO(update_finance_validate), financeController.updateFinanceDocument);
+financeRouter.get('/:id', financeController.getFinanceDocumentById);
+financeRouter.put('/:id',  financeController.updateFinanceDocument);
 financeRouter.delete('/:id', financeController.deleteFinanceDocument);
 financeRouter.get('/shipment/:shipmentId', financeController.getFinanceDocumentsByShipment);
 financeRouter.get('/customer/:customerId', financeController.getFinanceDocumentsByCustomer);

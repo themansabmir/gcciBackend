@@ -38,5 +38,5 @@ class MBLController {
 }
 
 const mblRepository = new MBLRepository(MblEntity);
-const mblService = new MblService(mblRepository);
+export const mblService = new MblService(mblRepository);
 export const mblController = new MBLController(mblService);
