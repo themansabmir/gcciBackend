@@ -22,6 +22,10 @@ export class BaseRepository<T extends Document> {
     return doc.save();
   }
 
+  createMany(data: Partial<T>[]): Promise<T[]> {
+    return this.model.create(data);
+  }
+
   updateById(id: string, update: UpdateQuery<T>, options: QueryOptions = { new: true }): Query<T | null, T> {
     return this.model.findByIdAndUpdate(id, update, options);
   }
