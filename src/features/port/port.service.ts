@@ -59,5 +59,92 @@ class PortService {
       throw error;
     }
   }
+
+  async bulkUploadPorts(parsedData: any[]) {
+    try {
+      if (parsedData.length === 0) {
+        throw new Error('No data found in the uploaded file');
+      }
+
+      // Validate and prepare data
+      const validatedPorts: Partial<IPort>[] = [];
+      const errors: string[] = [];
+
+      for (let i = 0; i < parsedData.length; i++) {
+        const row = parsedData[i];
+        const rowNumber = i + 2; // Excel row number (accounting for header)
+
+        // Validate required fields
+        if (!row.port_name || !row.port_code) {
+          errors.push(`Row ${rowNumber}: Port Name and Port Code are required`);
+          continue;
+        }
+
+        // Validate port_code format (alphanumeric, no spaces)
+        const portCodeRegex = /^[A-Za-z0-9]+$/;
+        if (!portCodeRegex.test(row.port_code)) {
+          errors.push(`Row ${rowNumber}: Port Code must be alphanumeric without spaces`);
+          continue;
+        }
+
+        // Check for duplicates in the current batch
+        const isDuplicateInBatch = validatedPorts.some(
+          port => port.port_code?.toLowerCase() === row.port_code.toLowerCase() ||
+            port.port_name?.toLowerCase() === row.port_name.toLowerCase()
+        );
+
+        if (isDuplicateInBatch) {
+          errors.push(`Row ${rowNumber}: Duplicate port found in the uploaded file`);
+          continue;
+        }
+
+        // Check for existing ports in database
+        const existingPortByCode = await this.portRepository.findOne({
+          port_code: row.port_code.toLowerCase()
+        });
+        const existingPortByName = await this.portRepository.findOne({
+          port_name: { $regex: new RegExp(`^${row.port_name}$`, 'i') }
+        });
+
+        if (existingPortByCode) {
+          errors.push(`Row ${rowNumber}: Port with code '${row.port_code}' already exists`);
+          continue;
+        }
+
+        if (existingPortByName) {
+          errors.push(`Row ${rowNumber}: Port with name '${row.port_name}' already exists`);
+          continue;
+        }
+
+        validatedPorts.push({
+          port_name: row.port_name.trim(),
+          port_code: row.port_code.toLowerCase().trim()
+        });
+      }
+
+      if (errors.length > 0) {
+        throw new Error(`Validation errors:\n${errors.join('\n')}`);
+      }
+
+      if (validatedPorts.length === 0) {
+        throw new Error('No valid ports found to import');
+      }
+
+      // Bulk insert validated ports
+      const createdPorts = await this.portRepository.createMany(validatedPorts);
+
+      return {
+        success: true,
+        message: `Successfully imported ${createdPorts.length} ports`,
+        imported: createdPorts.length,
+        data: createdPorts
+      };
+
+    } catch (error) {
+      throw error;
+    }
+  }
+
+
 }
 export default PortService;

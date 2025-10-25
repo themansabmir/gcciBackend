@@ -7,6 +7,56 @@ export class VendorService {
   constructor(vendorRepository: VendorRepository) {
     this.vendorRepository = vendorRepository;
   }
+
+  private groupVendors(rows: any[]) {
+    const vendorsMap = new Map();
+
+    for (const row of rows) {
+      if (!row || !row.vendor_name) throw new Error('Invalid data');
+
+      const vendorKey = `${row.vendor_name}`;
+      const vendorType = row.vendor_type?.split(',').map((type: string) => type.trim()) ?? [];
+
+      // If Vendor not exists, create it.
+      if (!vendorsMap.has(vendorKey)) {
+        vendorsMap.set(vendorKey, {
+          vendor_name: row.vendor_name,
+          vendor_type: vendorType,
+          credit_days: row.credit_days,
+          locations: []
+        });
+      }
+
+      // Push location
+      vendorsMap.get(vendorKey).locations.push({
+        city: row.city,
+        address: row.address,
+        state: row.state,
+        country: row.country,
+        pin_code: row.pin_code,
+        telephone: row.telephone,
+        mobile_number: row.mobile_number,
+        fax: row.fax,
+        gst_number: row.gst_number,
+        pan_number: row.pan_number,
+      });
+    }
+
+    return Array.from(vendorsMap.values());
+  }
+
+
+
+  public async bulkImportVendors(vendorRows: any[]) {
+    try {
+      const vendors = this.groupVendors(vendorRows);
+      await this.vendorRepository.createMany(vendors);
+      return "Vendors imported successfully";
+    } catch (error) {
+      throw error;
+    }
+  }
+
   public async createVendor(vendorBody: IVendor) {
     try {
       return await this.vendorRepository.create(vendorBody);

@@ -60,5 +60,5 @@ class PortController {
 }
 
 const portRepo = new PortRepository(PortModel);
-const portService = new PortService(portRepo);
+export const portService = new PortService(portRepo);
 export const portController = new PortController(portService);
