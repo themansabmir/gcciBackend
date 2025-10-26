@@ -30,7 +30,7 @@ export default class XLSXService {
         const sheet = workbook.Sheets[sheetName];
 
         // 2. Convert sheet to JSON array
-        const rows: ExcelRow[] = XLSX.utils.sheet_to_json(sheet, { defval: null });
+        const rows: ExcelRow[] = XLSX.utils.sheet_to_json(sheet, { defval: null , raw:false});
 
         if (rows.length === 0) {
             // Handle empty sheet case

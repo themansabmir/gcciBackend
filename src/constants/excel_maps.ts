@@ -41,6 +41,34 @@ export const templateConfig = {
         },
         fileName: 'vendor_template.xlsx',
         sheetName: 'Vendors Template'
+    },
+    'rate-master' : {
+        headers: [
+            'SHIPPING_LINE',
+            'START_PORT',
+            'END_PORT',
+            'CONTAINER_TYPE',
+            'CONTAINER_SIZE',
+            'TRADE_TYPE',
+            'CHARGE_NAME',
+            'HSN_CODE',
+            'PRICE',
+            'EFFECTIVE_FROM'
+        ],
+        map: {
+            'SHIPPING_LINE': 'shippingLineId',
+            'CONTAINER_TYPE': 'containerType',
+            'CONTAINER_SIZE': 'containerSize',
+            'START_PORT': 'startPortId',
+            'END_PORT': 'endPortId',
+            'CHARGE_NAME': 'chargeName',
+            'HSN_CODE': 'hsnCode',
+            'PRICE': 'price',
+            'EFFECTIVE_FROM': 'effectiveFrom',
+            'TRADE_TYPE': 'tradeType',
+        },
+        fileName: 'rate_master_template.xlsx',
+        sheetName: 'Rate Master Template'
     }
 };
 

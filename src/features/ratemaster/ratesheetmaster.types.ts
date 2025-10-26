@@ -10,6 +10,22 @@ export enum RATE_SHEET_STATUS {
     INACTIVE = 'INACTIVE',
 }
 
+
+export interface IExcelRow {
+    shippingLineId: string;
+    startPortId: string;
+    endPortId: string;
+    containerType: CONTAINER_TYPE;
+    containerSize: CONTAINER_SIZE;
+    tradeType: TRADE_TYPE;
+    effectiveFrom: Date;
+    effectiveTo?: Date;
+    chargeName: string;
+    hsnCode: string;
+    price: number;
+    currency: string;
+}
+
 export interface IRateSheetMaster extends Document {
     _id: ObjectId;
     comboKey: string;
@@ -34,10 +50,20 @@ export interface ICharge extends Document {
     price: number;
     effectiveFrom: Date;
     effectiveTo?: Date;
-    createdFromBatch?: ObjectId;
-    createdBy?: string;
     createdAt: Date;
     updatedAt: Date;
+}
+
+
+export interface GetRateSheetsFilters {
+  shippingLineId: string;
+  containerType?: string;
+  containerSize?: number | string;
+  startPortId?: string;
+  endPortId?: string;
+  effectiveFrom?: Date;
+  effectiveTo?: Date;
+  tradeType?: string;
 }
 
 export interface IChargeSheetFilter {

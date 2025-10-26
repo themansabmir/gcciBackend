@@ -1,9 +1,9 @@
 import { CONTAINER_SIZE, CONTAINER_TYPE } from "@features/mbl/mbl.types";
 import mongoose from "mongoose";
-import { RATE_SHEET_STATUS, TRADE_TYPE } from "./ratesheetmaster.types";
+import { ICharge, IRateSheetMaster, TRADE_TYPE } from "./ratesheetmaster.types";
 
 
-const RateSheetMasterEntity = new mongoose.Schema(
+const RateSheetMasterEntity = new mongoose.Schema<IRateSheetMaster>(
     {
         comboKey: {
             type: String,
@@ -13,7 +13,7 @@ const RateSheetMasterEntity = new mongoose.Schema(
         },
         shippingLineId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "ShippingLine",
+            ref: "Vendor",
             required: true,
         },
         startPortId: {
@@ -41,17 +41,11 @@ const RateSheetMasterEntity = new mongoose.Schema(
             enum: Object.values(TRADE_TYPE),
             default: TRADE_TYPE.EXPORT,
         },
-        remarks: String,
-        status: {
-            type: String,
-            enum: Object.values(RATE_SHEET_STATUS),
-            default: RATE_SHEET_STATUS.ACTIVE,
-        },
     },
     { timestamps: true }
 );
 
-const ChargeEntity = new mongoose.Schema(
+const ChargeEntity = new mongoose.Schema<ICharge>(
     {
         rateSheetMasterId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -64,10 +58,9 @@ const ChargeEntity = new mongoose.Schema(
             required: true,
             trim: true,
         },
-        hsnCode: String,
-        currency: {
+        hsnCode: {
             type: String,
-            default: "INR",
+            required: true,
         },
         price: {
             type: Number,
@@ -89,8 +82,8 @@ ChargeEntity.index(
     { rateSheetComboId: 1, chargeName: 1, effectiveFrom: 1 },
     { unique: true }
 );
-const RateSheetMasterTable = mongoose.model("RateSheetMaster", RateSheetMasterEntity);
-const ChargeTable = mongoose.model("Charge", ChargeEntity);
+const RateSheetMasterTable = mongoose.model<IRateSheetMaster>("RateSheetMaster", RateSheetMasterEntity);
+const ChargeTable = mongoose.model<ICharge>("Charge", ChargeEntity);
 
 export { RateSheetMasterTable, ChargeTable };
 

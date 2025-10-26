@@ -20,6 +20,7 @@ import { errorHandler } from '@middleware/error-handler';
 import invoiceItemRouter from '@features/invoicefield/invoiceitem.route';
 import financeRouter from '@features/finance/finance.route';
 import excelRouter from '@features/excel/excel.route';
+import rateSheetMasterRouter from '@features/ratemaster/ratemaster.route';
 dotenv.config();
 
 const app = express();
@@ -42,6 +43,7 @@ app.use('/api/hbl', validateToken, hblRouter);
 app.use('/api/invoiceitem', validateToken, invoiceItemRouter)
 app.use('/api/finance', financeRouter)
 app.use('/api/excel', excelRouter)
+app.use('/api/rate-sheet', rateSheetMasterRouter)
 // GLOBAL ERROR HANDLER
 app.use(errorHandler);
 
