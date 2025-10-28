@@ -19,6 +19,8 @@ import hblRouter from '@features/hbl/hbl.router';
 import { errorHandler } from '@middleware/error-handler';
 import invoiceItemRouter from '@features/invoicefield/invoiceitem.route';
 import financeRouter from '@features/finance/finance.route';
+import excelRouter from '@features/excel/excel.route';
+import rateSheetMasterRouter from '@features/ratemaster/ratemaster.route';
 dotenv.config();
 
 const app = express();
@@ -33,13 +35,15 @@ app.get('/', (req, res) => {
 app.use('/api', authRouter);
 app.use('/api/shipment', validateToken, shipmentRouter);
 app.use('/api/team', validateToken, teamRouter);
-app.use('/api/vendor', validateToken, vendorRouter);
+app.use('/api/vendor', vendorRouter);
 app.use('/api/airport', validateToken, airportRouter);
-app.use('/api/port', validateToken, portRouter);
+app.use('/api/port', portRouter);
 app.use('/api/mbl', validateToken, mblRouter);
 app.use('/api/hbl', validateToken, hblRouter);
 app.use('/api/invoiceitem', validateToken, invoiceItemRouter)
 app.use('/api/finance', financeRouter)
+app.use('/api/excel', excelRouter)
+app.use('/api/rate-sheet', rateSheetMasterRouter)
 // GLOBAL ERROR HANDLER
 app.use(errorHandler);
 

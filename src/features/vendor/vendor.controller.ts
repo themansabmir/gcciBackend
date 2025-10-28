@@ -20,11 +20,11 @@ class VendorController {
     }
   };
 
-  public updateVendor: RequestHandler<{id:string}, any, IVendor> = async (req: Request, res: Response, next: NextFunction) => {
+  public updateVendor: RequestHandler<{ id: string }, any, IVendor> = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const vendorUpdateBody = req.body;
-      const id=req.params?.id
-      const vendorRes = await this.vendorService.updateVendor(id,vendorUpdateBody);
+      const id = req.params?.id
+      const vendorRes = await this.vendorService.updateVendor(id, vendorUpdateBody);
       res.status(200).json({ message: 'Vendor updated successfully', response: vendorRes });
     } catch (error) {
       next(error);
@@ -34,8 +34,8 @@ class VendorController {
   public findVendors: RequestHandler<{}, any, any, IQuery> = async (req: Request<any, any, any, IQuery>, res: Response, next: NextFunction) => {
     try {
       const query = req.query;
-      const {data:response, total} = await this.vendorService.findAllVendors(query);
-      res.status(200).json({message:"Vendors data", response: response, total });
+      const { data: response, total } = await this.vendorService.findAllVendors(query);
+      res.status(200).json({ message: "Vendors data", response: response, total });
     } catch (error) {
       throw error;
     }
@@ -50,6 +50,8 @@ class VendorController {
       next(error);
     }
   };
-}
 
-export const vendorController = new VendorController(new VendorService(new VendorRepository(VendorEntity)));
+}
+const vendorRepository = new VendorRepository(VendorEntity);
+export const vendorService = new VendorService(vendorRepository);
+export const vendorController = new VendorController(vendorService);
