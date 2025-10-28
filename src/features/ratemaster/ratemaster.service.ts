@@ -2,12 +2,44 @@ import RateMasterRepository from "./ratemaster.repository";
 import PortModel from "@features/port/port.entity";
 import crypto from "crypto";
 import { ChargeTable, RateSheetMasterTable } from "./ratemaster.entity";
-import { TRADE_TYPE, IChargeSheetFilter, IChargeSheetResult, IExcelRow, GetRateSheetsFilters, ICharge, IRateSheetMaster } from "./ratesheetmaster.types";
+import { TRADE_TYPE, IExcelRow, GetRateSheetsFilters, ICharge, IRateSheetMaster } from "./ratesheetmaster.types";
 import { VendorEntity } from "@features/vendor/vendor.entity";
 import mongoose from "mongoose";
 
-interface IChargePopulated extends ICharge {
-  rateSheetMasterId: IRateSheetMaster; // now TS knows this is populated
+interface IChargePopulated {
+    _id: any;
+    rateSheetMasterId: {
+        _id: any;
+        comboKey: string;
+        shippingLineId: {
+            _id: string;
+            vendor_name: string;
+            vendor_code: string;
+        };
+        startPortId: {
+            _id: string;
+            port_name: string;
+            port_code: string;
+        };
+        endPortId: {
+            _id: string;
+            port_name: string;
+            port_code: string;
+        };
+        containerType: string;
+        containerSize: string;
+        tradeType: string;
+        createdAt: Date;
+        updatedAt: Date;
+    };
+    chargeName: string;
+    hsnCode?: string;
+    currency: string;
+    price: number;
+    effectiveFrom: Date;
+    effectiveTo?: Date;
+    createdAt: Date;
+    updatedAt: Date;
 }
 export default class RateMasterService {
     private rateMasterRepository;
@@ -15,7 +47,7 @@ export default class RateMasterService {
         this.rateMasterRepository = rateMasterRepository;
     }
 
-   private  async resolveRefs(rows: IExcelRow[]): Promise<IExcelRow[]> {
+    private async resolveRefs(rows: IExcelRow[]): Promise<IExcelRow[]> {
         console.log("1️⃣ BULK INSERTING RATE SHEET START", rows?.length);
         console.log(rows)
 
@@ -59,7 +91,7 @@ export default class RateMasterService {
         }));
     }
 
-   private  async getOrCreateCombo(row: IExcelRow) {
+    private async getOrCreateCombo(row: IExcelRow) {
         const comboKey = crypto
             .createHash("sha1")
             .update(`${row.shippingLineId}|${row.startPortId}|${row.endPortId}|${row.containerType}|${row.containerSize}`)
@@ -81,7 +113,7 @@ export default class RateMasterService {
         return combo._id;
     }
 
-   private async upsertCharge(row: IExcelRow, comboId: mongoose.Schema.Types.ObjectId) {
+    private async upsertCharge(row: IExcelRow, comboId: mongoose.Schema.Types.ObjectId) {
         const effectiveFrom = new Date(row.effectiveFrom);
 
         // Find existing charge for same combo and charge name
@@ -187,7 +219,8 @@ export default class RateMasterService {
         if (filters.tradeType) masterQuery.tradeType = filters.tradeType;
 
         // Fetch matching rate sheet combos
-        const rateSheets = await RateSheetMasterTable.find(masterQuery).lean();
+        const rateSheets = await RateSheetMasterTable.find(masterQuery)
+        .lean();
 
         if (!rateSheets.length) return [];
 
@@ -207,8 +240,27 @@ export default class RateMasterService {
         if (filters.effectiveTo) chargeQuery.effectiveTo = { $lte: filters.effectiveTo };
 
         let charges = await ChargeTable.find(chargeQuery)
-            .populate<IChargePopulated>("rateSheetMasterId")
-            .lean(); // to get shippingLine, ports, etc.
+            .populate({
+                path: "rateSheetMasterId",
+                populate: [
+                    {
+                        path: "shippingLineId",
+                        model: "Vendor",
+                        select: "vendor_name vendor_code"
+                    },
+                    {
+                        path: "startPortId",
+                        model: "Port",
+                        select: "port_name port_code"
+                    },
+                    {
+                        path: "endPortId",
+                        model: "Port",
+                        select: "port_name port_code"
+                    }
+                ]
+            })
+            .lean() as any as IChargePopulated[]; // to get shippingLine, ports, etc.
 
         // 3️⃣ Map back to the requested output structure
         const result = charges.map(c => ({
@@ -228,7 +280,7 @@ export default class RateMasterService {
     }
     
 
-  
+
 
 
 }
