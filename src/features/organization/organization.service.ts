@@ -4,6 +4,7 @@ import BcryptService from '@lib/bcrypt';
 import JwtService from '@lib/jwt';
 import { mailer } from '@lib/mail';
 import { Logger } from '@lib/logger';
+import { renderTemplate } from '@lib/pugRenderer';
 
 export default class OrganizationService {
   private organizationRepository: OrganizationRepository;
@@ -29,12 +30,17 @@ export default class OrganizationService {
     const confirmToken = await this.jwtService.generateToken({ id: newOrg._id }, { expiresIn: '21d' }); //increase time
     const confirmLink = `${process.env.FRONTEND_URL}/confirm-account?token=${confirmToken}`;
 
+    // 🪄 Add these logs to see token & link in the console
+    console.log('🔑 Confirmation Token:', confirmToken);
+    console.log('🔗 Confirmation Link:', confirmLink);
+
+    const html = renderTemplate('confirmAccount', { name: newOrg.name, confirmLink }); //  use Pug
+
+
     await mailer.sendMail({
       to: newOrg.email,
       subject: 'Confirm Your Account',
-      html: `<p>Hello ${newOrg.name},</p>
-             <p>Click below to confirm your account:</p>
-             <a href="${confirmLink}" target="_blank">Confirm Account</a>`,
+      html,
     });
 
     Logger.info(`Signup successful for ${newOrg.email}`);
@@ -60,13 +66,13 @@ export default class OrganizationService {
     const resetToken = await this.jwtService.generateToken({ id: org._id }, { expiresIn: '15m' });
     const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
+    const html = renderTemplate('forgotPassword', { name: org.name, resetLink }); //  use Pug
+
+
     await mailer.sendMail({
       to: org.email,
       subject: 'Password Reset Request',
-      html: `<p>Hello ${org.name},</p>
-             <p>You requested a password reset. Click below to reset your password:</p>
-             <a href="${resetLink}" target="_blank">Reset Password</a>
-             <p>This link expires in 15 minutes.</p>`,
+      html,
     });
 
     Logger.info(`Password reset link sent to ${org.email}`);
