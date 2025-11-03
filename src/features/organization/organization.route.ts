@@ -1,20 +1,13 @@
-import OrganizationEntity from './organization.entity';
-import { IOrganization } from './organization.types';
+import express from 'express';
+import { organizationController } from './organization.controller';
 
-export default class OrganizationRepository {
-  async create(data: IOrganization) {
-    return await OrganizationEntity.create(data);
-  }
+const router = express.Router();
 
-  async findOne(filter: Partial<IOrganization>) {
-    return await OrganizationEntity.findOne(filter);
-  }
+// Organization routes
+router.post('/signup', organizationController.signup);
+router.post('/login', organizationController.login);
+router.post('/forgot-password', organizationController.forgotPassword);
+router.post('/reset-password', organizationController.resetPassword);
+router.post('/confirm-account', organizationController.confirmAccount);
 
-  async findById(id: string) {
-    return await OrganizationEntity.findById(id);
-  }
-
-  async updateById(id: string, update: Partial<IOrganization>) {
-    return await OrganizationEntity.findByIdAndUpdate(id, update, { new: true });
-  }
-}
+export default router;
