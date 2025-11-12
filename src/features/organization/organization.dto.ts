@@ -5,6 +5,21 @@ export const SignupSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(8),
+  // ✅ Vendor-related fields (added)
+  organization_name: z.string(),
+  city: z.string(),
+  address: z.string(),
+  state: z.string(),
+  country: z.string(),
+  pin_code: z.string(),
+  telephone: z.string(),
+  phone: z.string(),
+  gst_number: z.string(),
+  pan: z.string(),
+  fax:  z.string(),
+  location: z.string(),
+  credit_days: z.string()
+
 });
 export type SignUpBody = z.infer<typeof SignupSchema>;
 

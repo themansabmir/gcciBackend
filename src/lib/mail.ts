@@ -12,13 +12,13 @@ export class MailerService {
   private transporter: Transporter;
   private defaultFrom: string;
 
-  constructor(options: { host: string; port: number; user: string; pass: string; from: string }) {
+  constructor(options: { host: string; port: number; secure: boolean; user: string; pass: string; from: string }) {
     this.defaultFrom = options.from;
 
     this.transporter = nodemailer.createTransport({
       host: options.host,
       port: options.port,
-      secure: options.port === 465, // true for SSL
+      secure: options.secure, // true for SSL (465), false for TLS (587)
       auth: {
         user: options.user,
         pass: options.pass,
@@ -36,10 +36,12 @@ export class MailerService {
   }
 }
 
+// 🟢 Updated mailer instance to use Gmail credentials
 export const mailer = new MailerService({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  user: 'your-smtp-user',
-  pass: 'your-smtp-password',
-  from: 'Your App <no-reply@yourapp.com>',
+  host: 'smtp.gmail.com',
+  port: 465, // SSL port
+  secure: true,
+  user: 'mayowareuben@gmail.com',
+  pass: 'dpya ulzk bsvn cevz', // your Gmail App Password
+  from: 'FreightDex <mayowareuben@gmail.com>',
 });

@@ -1,13 +1,24 @@
 import express from 'express';
-import { organizationController } from './organization.controller';
+import OrganizationController from './organization.controller';
+import OrganizationService from './organization.service';
+import OrganizationRepository from './organization.repository';
+import BcryptService from '@lib/bcrypt';
+import JwtService from '@lib/jwt';
+import UserService from 'features/user/user.service';
 
 const router = express.Router();
 
-// Organization routes
-router.post('/signup', organizationController.signup);
-router.post('/login', organizationController.login);
-router.post('/forgot-password', organizationController.forgotPassword);
-router.post('/reset-password', organizationController.resetPassword);
-router.post('/confirm-account', organizationController.confirmAccount);
+const bcryptService = new BcryptService();
+const userService = new UserService(bcryptService);
+const orgRepo = new OrganizationRepository();
+const jwtService = new JwtService();
+const orgService = new OrganizationService(orgRepo, bcryptService, jwtService, userService);
+const orgController = new OrganizationController(orgService);
+
+router.post('/signup', orgController.signup);
+router.post('/login', orgController.login);
+router.post('/forgot-password', orgController.forgotPassword);
+router.post('/reset-password', orgController.resetPassword);
+router.post('/confirm-account', orgController.confirmAccount);
 
 export default router;

@@ -8,10 +8,6 @@ import {
   ConfirmAccountBody,
 } from './organization.dto';
 import { successResponse } from '@middleware/successResponse';
-import JwtService from '@lib/jwt';
-import BcryptService from '@lib/bcrypt';
-import OrganizationRepository from './organization.repository';
-import OrganizationEntity from './organization.entity';
 import { Logger } from '@lib/logger';
 
 class OrganizationController {
@@ -68,8 +64,4 @@ class OrganizationController {
   };
 }
 
-const jwtService = new JwtService();
-const bcryptService = new BcryptService();
-const organizationRepository = new OrganizationRepository();
-const organizationService = new OrganizationService(organizationRepository, bcryptService, jwtService);
-export const organizationController = new OrganizationController(organizationService);
+export default OrganizationController;

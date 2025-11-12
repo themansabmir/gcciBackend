@@ -70,8 +70,14 @@ export default class AuthService {
         ...signUpBody,
         password: hashedPassword,
       };
+
       const newUser = await this.teamRepository.create(userPayload);
-      const resetPwdToken = await this.jwtService.generateToken({ id: newUser._id });
+
+      // create org
+
+      // create vendor
+
+      const resetPwdToken = await this.jwtService.generateToken({ id: newuser._id });
 
       Logger.info('NEW USER ADDED SUCCESSFULLY', { data: newUser.email });
       return newUser;
