@@ -208,14 +208,17 @@ export default class RateMasterService {
 
         // If shippingLineId is provided, filter by it; otherwise get all shipping lines
         if (filters.shippingLineId) {
-            masterQuery.shippingLineId = filters.shippingLineId;
+            // Only allow valid ObjectIds for shippingLineId
+            if (typeof filters.shippingLineId === "string" && mongoose.isValidObjectId(filters.shippingLineId)) {
+                masterQuery.shippingLineId = { $eq: filters.shippingLineId };
+            }
         }
 
-        if (filters.containerType) masterQuery.containerType = filters.containerType;
-        if (filters.containerSize) masterQuery.containerSize = filters.containerSize;
-        if (filters.startPortId) masterQuery.startPortId = filters.startPortId;
-        if (filters.endPortId) masterQuery.endPortId = filters.endPortId;
-        if (filters.tradeType) masterQuery.tradeType = filters.tradeType;
+        if (filters.containerType && typeof filters.containerType === "string") masterQuery.containerType = { $eq: filters.containerType };
+        if (filters.containerSize && typeof filters.containerSize === "string") masterQuery.containerSize = { $eq: filters.containerSize };
+        if (filters.startPortId && typeof filters.startPortId === "string" && mongoose.isValidObjectId(filters.startPortId)) masterQuery.startPortId = { $eq: filters.startPortId };
+        if (filters.endPortId && typeof filters.endPortId === "string" && mongoose.isValidObjectId(filters.endPortId)) masterQuery.endPortId = { $eq: filters.endPortId };
+        if (filters.tradeType && typeof filters.tradeType === "string") masterQuery.tradeType = { $eq: filters.tradeType };
 
         // Fetch matching rate sheet combos
         const rateSheets = await RateSheetMasterTable.find(masterQuery)
