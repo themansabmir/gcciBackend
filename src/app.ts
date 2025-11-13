@@ -24,6 +24,7 @@ import financeRouter from '@features/finance/finance.route';
 import excelRouter from '@features/excel/excel.route';
 import rateSheetMasterRouter from '@features/ratemaster/ratemaster.route';
 import customerRouter from '@features/customer/customer.route';
+import quotationRouter from '@features/quotation/quotation.route';
 dotenv.config();
 
 const app = express();
@@ -55,6 +56,7 @@ app.use('/api/finance', financeRouter)
 app.use('/api/excel', excelRouter)
 app.use('/api/rate-sheet', rateSheetMasterRouter)
 app.use('/api/customer', customerRouter);
+app.use('/api/quotation', validateToken, quotationRouter);
 
 // GLOBAL ERROR HANDLER
 app.use(errorHandler);
