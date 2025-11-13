@@ -22,7 +22,7 @@ import invoiceItemRouter from '@features/invoicefield/invoiceitem.route';
 import financeRouter from '@features/finance/finance.route';
 import excelRouter from '@features/excel/excel.route';
 import rateSheetMasterRouter from '@features/ratemaster/ratemaster.route';
-import userRouter from '@features/user/user.route';
+import customerRouter from '@features/customer/customer.route';
 dotenv.config();
 
 const app = express();
@@ -47,7 +47,7 @@ app.use('/api/finance', financeRouter)
 app.use('/api/excel', excelRouter)
 app.use('/api/rate-sheet', rateSheetMasterRouter)
 app.use('/api/organization', organizationRouter);
-app.use('/api/user', validateToken,userRouter);
+app.use('/api/customer', customerRouter);
 
 // GLOBAL ERROR HANDLER
 app.use(errorHandler);

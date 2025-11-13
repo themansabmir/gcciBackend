@@ -2,15 +2,17 @@ import { Schema, model, Document, InferSchemaType } from "mongoose";
 
 const OrganizationSchema = new Schema(
   {
-      name: { type: String, required: true },
-      email: { type: String, required: true, unique: true },
-      password: { type: String, required: true },
-      isVerified: { type: Boolean, default: false },
-      is_active: { type: Boolean, default: false },
-      verificationToken: { type: String, default: null },
-      resetToken: { type: String, default: null },
-      resetTokenExpires: { type: Date, default: null },
-      users: [{ type: Schema.Types.ObjectId, ref: "User" }]
+    name: { type: String, required: true },
+    city: { type: String, required: true },
+    address: { type: String, required: true },
+    state: { type: String, required: true },
+    country: { type: String, required: true },
+    pin_code: { type: String, required: true },
+    mobile_number: { type: String, required: true },
+    gst_number: { type: String, required: true },
+    pan_number: { type: String, required: true },
+    isApproved: { type: Boolean, default: false },
+    is_active: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
