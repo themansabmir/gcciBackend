@@ -19,16 +19,21 @@ import mblRouter from '@features/mbl/mbl.route';
 import hblRouter from '@features/hbl/hbl.router';
 import { errorHandler } from '@middleware/error-handler';
 import { apiLogger } from '@middleware/api-logger';
+import { generalLimiter, authLimiter } from '@middleware/rate-limiter';
 import invoiceItemRouter from '@features/invoicefield/invoiceitem.route';
 import financeRouter from '@features/finance/finance.route';
 import excelRouter from '@features/excel/excel.route';
 import rateSheetMasterRouter from '@features/ratemaster/ratemaster.route';
+import quotationRouter from '@features/quotation/quotation.route';
 dotenv.config();
 
 const app = express();
 app.use(cors());
 
 app.use(express.json());
+
+// Global Rate Limiter - Apply to all requests
+app.use(generalLimiter);
 
 // Global API Logger Middleware
 app.use(apiLogger);
@@ -37,7 +42,8 @@ app.get('/', (req, res) => {
   res.status(200).json({ message: 'GCO Backend API is running!' });
 });
 // APP ROUTES
-app.use('/api', authRouter);
+// Auth routes with strict rate limiting to prevent brute force
+app.use('/api', authLimiter, authRouter);
 app.use('/api/shipment', validateToken, shipmentRouter);
 app.use('/api/team', validateToken, teamRouter);
 app.use('/api/vendor', vendorRouter);
@@ -50,6 +56,7 @@ app.use('/api/finance', financeRouter)
 app.use('/api/excel', excelRouter)
 app.use('/api/rate-sheet', rateSheetMasterRouter)
 app.use('/api/organization', organizationRouter);
+app.use('/api/quotation', validateToken, quotationRouter);
 
 // GLOBAL ERROR HANDLER
 app.use(errorHandler);
