@@ -18,6 +18,7 @@ import { validateToken } from '@middleware/routeProtector';
 import mblRouter from '@features/mbl/mbl.route';
 import hblRouter from '@features/hbl/hbl.router';
 import { errorHandler } from '@middleware/error-handler';
+import { apiLogger } from '@middleware/api-logger';
 import invoiceItemRouter from '@features/invoicefield/invoiceitem.route';
 import financeRouter from '@features/finance/finance.route';
 import excelRouter from '@features/excel/excel.route';
@@ -28,6 +29,9 @@ const app = express();
 app.use(cors());
 
 app.use(express.json());
+
+// Global API Logger Middleware
+app.use(apiLogger);
 
 app.get('/', (req, res) => {
   res.status(200).json({ message: 'GCO Backend API is running!' });
