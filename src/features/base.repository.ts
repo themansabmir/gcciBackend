@@ -1,5 +1,6 @@
 import { Document, FilterQuery, Model, Query, UpdateQuery, QueryOptions, PipelineStage } from 'mongoose';
 import { IQuery } from './vendor/vendor.types';
+import { sanitizeInput, isValidFieldName, sanitizePagination, sanitizeSortParams } from '@lib/security';
 
 export class BaseRepository<T extends Document> {
   constructor(protected readonly model: Model<T>) {}
@@ -53,21 +54,32 @@ export class BaseRepository<T extends Document> {
   buildSearchQuery(query: IQuery, searchableFields: string[]) {
     const { page = 1, limit = 10, search, sortBy, sortOrder = 'asc' } = query;
 
-    const skip = (page - 1) * limit;
+    // Sanitize pagination using centralized utility
+    const { skip, limit: sanitizedLimit } = sanitizePagination(page, limit);
 
     const filter: any = {};
+    
+    // Sanitize search input to prevent NoSQL injection
     if (search && searchableFields.length > 0) {
-      filter.$or = searchableFields.map((field) => ({
-        [field]: { $regex: search, $options: 'i' },
-      }));
+      const sanitizedSearch = sanitizeInput(search);
+      filter.$or = searchableFields.map((field) => {
+        // Validate field names to prevent field injection
+        if (!isValidFieldName(field)) {
+          throw new Error(`Invalid field name: ${field}`);
+        }
+        return {
+          [field]: { $regex: sanitizedSearch, $options: 'i' },
+        };
+      });
     }
 
-    const sort: Record<string, 1 | -1> = sortBy ? { [sortBy]: sortOrder === 'asc' ? 1 : -1 } : { createdAt: -1 };
+    // Sanitize sort parameters using centralized utility
+    const sort = sanitizeSortParams(sortBy, sortOrder, searchableFields);
 
     return {
       filter,
       skip,
-      limit,
+      limit: sanitizedLimit,
       sort,
     };
   }

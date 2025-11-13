@@ -201,26 +201,28 @@ export default class RateMasterService {
      */
 
     public async getActiveRateSheets(filters: GetRateSheetsFilters) {
-        if (!filters.shippingLineId) {
-            throw new Error("shippingLineId is required");
-        }
-
         const today = new Date();
 
         // 1️⃣ Build RateSheetMaster query
-        const masterQuery: any = {
-            shippingLineId: filters.shippingLineId,
-        };
+        const masterQuery: any = {};
 
-        if (filters.containerType) masterQuery.containerType = filters.containerType;
-        if (filters.containerSize) masterQuery.containerSize = filters.containerSize;
-        if (filters.startPortId) masterQuery.startPortId = filters.startPortId;
-        if (filters.endPortId) masterQuery.endPortId = filters.endPortId;
-        if (filters.tradeType) masterQuery.tradeType = filters.tradeType;
+        // If shippingLineId is provided, filter by it; otherwise get all shipping lines
+        if (filters.shippingLineId) {
+            // Only allow valid ObjectIds for shippingLineId
+            if (typeof filters.shippingLineId === "string" && mongoose.isValidObjectId(filters.shippingLineId)) {
+                masterQuery.shippingLineId = { $eq: filters.shippingLineId };
+            }
+        }
+
+        if (filters.containerType && typeof filters.containerType === "string") masterQuery.containerType = { $eq: filters.containerType };
+        if (filters.containerSize && typeof filters.containerSize === "string") masterQuery.containerSize = { $eq: filters.containerSize };
+        if (filters.startPortId && typeof filters.startPortId === "string" && mongoose.isValidObjectId(filters.startPortId)) masterQuery.startPortId = { $eq: filters.startPortId };
+        if (filters.endPortId && typeof filters.endPortId === "string" && mongoose.isValidObjectId(filters.endPortId)) masterQuery.endPortId = { $eq: filters.endPortId };
+        if (filters.tradeType && typeof filters.tradeType === "string") masterQuery.tradeType = { $eq: filters.tradeType };
 
         // Fetch matching rate sheet combos
         const rateSheets = await RateSheetMasterTable.find(masterQuery)
-        .lean();
+            .lean();
 
         if (!rateSheets.length) return [];
 
@@ -273,12 +275,101 @@ export default class RateMasterService {
             HSN_CODE: c.hsnCode,
             PRICE: c.price,
             EFFECTIVE_FROM: c.effectiveFrom,
+            EFFECTIVE_TO: c.effectiveTo,
             TRADE_TYPE: c.rateSheetMasterId.tradeType
         }));
 
         return result;
     }
-    
+
+    /**
+     * Get distinct shipping lines for UI filter
+     * @returns Promise<{ _id: string; vendor_name: string }[]>
+     */
+
+    public async distinctShippingLines(): Promise<{ _id: string; vendor_name: string }[]> {
+        return await RateSheetMasterTable.aggregate([
+            {
+                $group: {
+                    _id: "$shippingLineId"
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendors',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'vendor'
+                }
+            },
+            {
+                $unwind: '$vendor'
+            },
+            {
+                $project: {
+                    _id: 1,
+                    vendor_name: '$vendor.vendor_name',
+                }
+            }
+        ]
+        )
+    }
+
+    public async distinctPorts(shippingLineId: string): Promise<{ _id: string; port_name: string }[]> {
+
+        if(!shippingLineId){
+            const startPorts = await RateSheetMasterTable.distinct('startPortId')
+            const endPorts = await RateSheetMasterTable.distinct('endPortId')
+            const distinctPorts = new Set([...startPorts, ...endPorts])
+            const ports = await PortModel.find({ _id: { $in: Array.from(distinctPorts) } })
+            return ports.map((port: any) => ({
+                _id: port._id,
+                port_name: port.port_name
+            }))
+        }
+
+        const targetLineId = new mongoose.Types.ObjectId(shippingLineId);
+        return await RateSheetMasterTable.aggregate(
+            [
+                { 
+                    $match: {
+                        shippingLineId: targetLineId
+                    }
+                }, 
+                {
+                    $project: {
+                        _id : 0, 
+                        portId: ['$startPortId', '$endPortId']
+                    }
+                }, 
+                {
+                    $unwind: '$portId'
+                },
+                {
+                    $group: {
+                        _id: '$portId',
+                    }
+                },
+                {
+                    $lookup:{
+                        from: 'ports',
+                        localField: '_id',
+                        foreignField: '_id',
+                        as: 'port'
+                    }
+                },
+                {
+                    $unwind: '$port'
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        port_name: '$port.port_name',
+                    }
+                }
+            ]
+        )
+    }
 
 
 

@@ -4,6 +4,7 @@ import ShipmentRepository from './shipment.repository';
 import { IShipment, IShipmentQuery } from './shipment.types';
 import { mblService } from '@features/mbl/mbl.controller';
 import { hblService } from '@features/hbl/hbl.controller';
+import { validateEnum } from '@lib/security';
 
 export default class ShipmentService {
   private shipmentRepository;
@@ -47,9 +48,12 @@ export default class ShipmentService {
     try {
       const { skip, sort, limit, filter } = this.shipmentRepository.buildSearchQuery({...query}, ['shipment_name', 'shipment_type']);
 
+      // Sanitize shipment_type using centralized enum validation
       if (query.shipment_type) {
-        filter['shipment_type'] = query.shipment_type;
+        const sanitizedType = validateEnum(query.shipment_type, ['IMP', 'EXP'] as const, 'shipment_type');
+        filter['shipment_type'] = sanitizedType;
       }
+      
       console.group('filter', filter, query)
       const data = await this.shipmentRepository.find(filter).sort(sort).limit(limit).skip(skip);
       const total = await this.shipmentRepository.count(filter);

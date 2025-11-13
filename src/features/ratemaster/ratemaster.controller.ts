@@ -22,6 +22,33 @@ class RateMasterController {
             next(error);
         }
     };
+
+    public distinctShippingLines: RequestHandler<{}, any, any, GetRateSheetsFilters> = async (
+        req: Request<{}, any, any, GetRateSheetsFilters>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const shippingLines = await this.rateMasterService.distinctShippingLines();
+            successResponse({ res, response: shippingLines, message: 'Shipping lines fetched successfully' });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    public distinctPorts: RequestHandler<{shippingLineId: string}, any, any, GetRateSheetsFilters> = async (
+        req: Request<{shippingLineId: string}, any, any, GetRateSheetsFilters>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const targetLineId = req.query.shippingLineId;
+            const ports = await this.rateMasterService.distinctPorts(targetLineId);
+            successResponse({ res, response: ports, message: 'Ports fetched successfully' });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
 
 export const rateMasterController = new RateMasterController(rateMasterService);
