@@ -60,7 +60,11 @@ export default class UserService {
       });
 
       Logger.info("Invitation created", { email, organizationId });
-      return newUser;
+      return {
+  id: newUser._id,
+  email: newUser.email,
+  status: newUser.status
+};
     } catch (error: any) {
   Logger.error('Error in inviteUser service', {
     message: error.message,
