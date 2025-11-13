@@ -17,5 +17,12 @@ export const MONGO_URI = dbConnections[env] || dbConnections.development;
 // jwt
 export const JWT_SECRET = process.env.JWT_SECRET ?? "jwtsecret";
 
+// email
+export const EMAIL_HOST = process.env.EMAIL_HOST ?? 'smtp.ethereal.email';
+export const EMAIL_PORT = process.env.EMAIL_PORT ? parseInt(process.env.EMAIL_PORT, 10) : 587;
+export const EMAIL_USER = process.env.EMAIL_USER ?? 'test@ethereal.email';
+export const EMAIL_PASS = process.env.EMAIL_PASS ?? 'password';
+
+
 // env
 export const ENV = env;
