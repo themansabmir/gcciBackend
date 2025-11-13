@@ -1,0 +1,20 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    title Invitation
+    style.
+      a.button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 6px;
+        display: inline-block;
+      }
+  body
+    h2 You're Invited!
+    p You have been invited to join 
+      strong #{organizationName}
+    p Click the button below to accept the invitation and set your password:
+    a.button(href=invitationLink) Accept Invitation
