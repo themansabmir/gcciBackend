@@ -11,6 +11,7 @@ const OrganizationSchema = new Schema(
     mobile_number: { type: String, required: true },
     gst_number: { type: String, required: true },
     pan_number: { type: String, required: true },
+    vendorRef: { type: Schema.Types.ObjectId, ref: 'Vendor' },
     isApproved: { type: Boolean, default: false },
     is_active: { type: Boolean, default: false },
   },

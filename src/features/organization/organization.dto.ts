@@ -1,42 +1,20 @@
 import { z } from 'zod';
 
-// Sign Up
-export const SignupSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-export type SignUpBody = z.infer<typeof SignupSchema>;
+/**
+ * Organization DTOs
+ * Note: Auth-related schemas have been moved to customer.dto.ts
+ */
 
-// Login
-export const LoginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
+// Update Organization
+export const updateOrganizationSchema = z.object({
+  name: z.string().min(2).optional(),
+  city: z.string().min(2).optional(),
+  address: z.string().min(5).optional(),
+  state: z.string().min(2).optional(),
+  country: z.string().min(2).optional(),
+  pin_code: z.string().min(4).optional(),
+  mobile_number: z.string().min(10).optional(),
+  gst_number: z.string().min(15).optional(),
+  pan_number: z.string().min(10).optional(),
 });
-export type LoginBody = z.infer<typeof LoginSchema>;
-
-// Update Password
-export const updatePasswordSchema = z.object({
-  oldPassword: z.string(),
-  newPassword: z.string().min(8),
-});
-export type IUpdatePassword = z.infer<typeof updatePasswordSchema>;
-
-// Forgot Password
-export const forgotPasswordSchema = z.object({
-  email: z.string().email(),
-});
-export type ForgotPasswordBody = z.infer<typeof forgotPasswordSchema>;
-
-// Reset Password
-export const resetPasswordSchema = z.object({
-  token: z.string(),
-  newPassword: z.string().min(8),
-});
-export type ResetPasswordBody = z.infer<typeof resetPasswordSchema>;
-
-// Confirm Account
-export const confirmAccountSchema = z.object({
-  token: z.string(),
-});
-export type ConfirmAccountBody = z.infer<typeof confirmAccountSchema>;
+export type UpdateOrganizationBody = z.infer<typeof updateOrganizationSchema>;

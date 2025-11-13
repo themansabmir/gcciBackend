@@ -9,6 +9,7 @@ customerRouter.post("/signup", customerController.signup);
 customerRouter.post("/login", customerController.login);
 customerRouter.post("/forgot-password", customerController.forgotPassword);
 customerRouter.post("/reset-password", customerController.resetPassword);
+customerRouter.post("/confirm-account", customerController.confirmAccount);
 
 // Customer management routes (protected - authentication required)
 customerRouter.post("/invite", validateToken, customerController.inviteCustomer);

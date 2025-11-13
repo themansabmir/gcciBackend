@@ -6,8 +6,10 @@ import CustomerService from './customer.service';
 import { Logger } from '@lib/logger';
 import JwtService from '@lib/jwt';
 import BcryptService from '@lib/bcrypt';
-import { SignupBody, LoginBody, ForgotPasswordBody, InviteCustomerBody, ResetPasswordBody } from './customer.dto';
+import { SignupBody, LoginBody, ForgotPasswordBody, InviteCustomerBody, ResetPasswordBody, ConfirmAccountBody } from './customer.dto';
 import OrganizationRepository from '../organization/organization.repository';
+import { VendorRepository } from '../vendor/vendor.repository';
+import { VendorEntity } from '../vendor/vendor.entity';
 
 class CustomerController {
   private customerService: CustomerService;
@@ -100,7 +102,7 @@ class CustomerController {
   };
 
   /**
-   * Reset password for invited customer
+   * Reset password with token
    */
   public resetPassword: RequestHandler<{}, any, ResetPasswordBody> = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -115,12 +117,30 @@ class CustomerController {
       next(error);
     }
   };
+
+  /**
+   * Confirm account via email link
+   */
+  public confirmAccount: RequestHandler<{}, any, ConfirmAccountBody> = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this.customerService.confirmAccount(req.body.token);
+
+      successResponse({
+        res,
+        message: result.message,
+      });
+    } catch (error) {
+      Logger.error('Error confirming account', { error });
+      next(error);
+    }
+  };
 }
 
 export const customerController = new CustomerController(
   new CustomerService(
     new CustomerRepository(CustomerModel),
     new OrganizationRepository(),
+    new VendorRepository(VendorEntity),
     new JwtService(),
     new BcryptService()
   )

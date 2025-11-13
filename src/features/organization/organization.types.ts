@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 export interface IOrganization {
   _id?: string;
   name: string;
@@ -9,6 +11,7 @@ export interface IOrganization {
   mobile_number: string;
   gst_number: string;
   pan_number: string;
+  vendorRef?: Types.ObjectId; // Reference to vendor if exists
   isApproved: boolean;
   is_active: boolean;
   createdAt?: Date;

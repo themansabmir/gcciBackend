@@ -2,19 +2,197 @@ doctype html
 html
   head
     meta(charset="UTF-8")
-    title Invitation
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title You're Invited - GCCI
     style.
-      a.button {
-        background-color: #007bff;
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f4f4;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 30px;
+        text-align: center;
         color: white;
-        padding: 10px 20px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 600;
+      }
+      .header p {
+        margin: 5px 0 0 0;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+      .content {
+        padding: 40px 30px;
+      }
+      .content h2 {
+        color: #333;
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+      .content p {
+        color: #666;
+        font-size: 16px;
+        margin-bottom: 20px;
+      }
+      .button {
+        display: inline-block;
+        padding: 14px 32px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white !important;
         text-decoration: none;
         border-radius: 6px;
-        display: inline-block;
+        font-weight: 600;
+        font-size: 16px;
+        margin: 20px 0;
+        transition: transform 0.2s;
+      }
+      .button:hover {
+        transform: translateY(-2px);
+      }
+      .highlight-box {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border: 2px solid #667eea;
+        padding: 20px;
+        margin: 25px 0;
+        border-radius: 8px;
+        text-align: center;
+      }
+      .highlight-box h3 {
+        margin: 0 0 10px 0;
+        color: #667eea;
+        font-size: 20px;
+      }
+      .highlight-box p {
+        margin: 5px 0;
+        color: #333;
+        font-weight: 600;
+      }
+      .info-box {
+        background-color: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .info-box p {
+        margin: 0;
+        color: #555;
+        font-size: 14px;
+      }
+      .credentials-box {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .credentials-box p {
+        margin: 5px 0;
+        color: #856404;
+        font-size: 14px;
+      }
+      .credentials-box strong {
+        color: #333;
+      }
+      .footer {
+        background-color: #2c3e50;
+        color: #ecf0f1;
+        padding: 30px;
+        text-align: center;
+        font-size: 14px;
+      }
+      .footer p {
+        margin: 5px 0;
+        color: #bdc3c7;
+      }
+      .footer a {
+        color: #667eea;
+        text-decoration: none;
+      }
+      .divider {
+        height: 1px;
+        background-color: #e0e0e0;
+        margin: 30px 0;
+      }
+      .emoji {
+        font-size: 48px;
+        margin: 20px 0;
       }
   body
-    h2 You're Invited!
-    p You have been invited to join 
-      strong #{organizationName}
-    p Click the button below to accept the invitation and set your password:
-    a.button(href=invitationLink) Accept Invitation
+    .container
+      .header
+        h1 GCCI
+        p Global Cargo Consolidate India
+      
+      .content
+        center
+          .emoji 🎉
+        
+        h2 You're Invited!
+        
+        p Hello,
+        
+        p You have been invited to join 
+          strong #{organizationName} 
+          | on the GCCI platform. We're excited to have you as part of our logistics and customs intelligence network!
+        
+        .highlight-box
+          h3 Organization
+          p #{organizationName}
+        
+        p To get started, click the button below to accept your invitation and set up your account password:
+        
+        center
+          a.button(href=invitationLink target="_blank") Accept Invitation & Set Password
+        
+        .credentials-box
+          p 
+            strong 🔐 Temporary Login Credentials:
+          p 
+            strong Email: 
+            | #{email}
+          p 
+            strong Temporary Password: 
+            code(style="background: #fff; padding: 2px 6px; border-radius: 3px; font-family: monospace;") #{temporaryPassword}
+          p 
+            em (You will be required to change this password on first login)
+        
+        .divider
+        
+        .info-box
+          p 
+            strong What's Next?
+          p 1. Click the invitation link above
+          p 2. Set your new secure password
+          p 3. Complete your profile setup
+          p 4. Start managing your cargo and customs operations
+        
+        .divider
+        
+        p If the button above doesn't work, copy and paste this link into your browser:
+        p(style="word-break: break-all; color: #667eea; font-size: 14px;") #{invitationLink}
+        
+        .divider
+        
+        p(style="color: #999; font-size: 14px;") This invitation link will expire in 7 days. If you have any questions or need assistance, please contact your organization administrator or our support team.
+      
+      .footer
+        p 
+          strong GCCI - Global Cargo Consolidate India
+        p Streamlining your logistics and customs operations
+        p © 2025 GCCI. All rights reserved.
+        p 
+          | Need help? Contact us at 
+          a(href="mailto:support@gcci.com") support@gcci.com
