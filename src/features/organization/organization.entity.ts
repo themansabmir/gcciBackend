@@ -10,6 +10,7 @@ const OrganizationSchema = new Schema(
       verificationToken: { type: String, default: null },
       resetToken: { type: String, default: null },
       resetTokenExpires: { type: Date, default: null },
+      users: [{ type: Schema.Types.ObjectId, ref: "User" }]
   },
   { timestamps: true }
 );
@@ -25,3 +26,4 @@ export const OrganizationEntity = model<IOrganizationDocument>(
 );
 
 export default OrganizationEntity;
+
