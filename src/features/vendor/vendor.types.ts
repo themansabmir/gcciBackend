@@ -25,6 +25,8 @@ export interface IVendor extends Document {
   vendor_name: string;
   vendor_type: typeof VendorTypeEnum;
   credit_days: string;
+  pan_number: string;
+  is_active: boolean;
   locations: ILocation[];
 }
 
