@@ -19,7 +19,7 @@ class TeamController {
     try {
       const query = req.query;
       const { data, total } = await this.teamService.findAllTeamMembers(query);
-      return successResponse({ res, response: data, message: 'Team Members Fetched Successfully', total });
+     successResponse({ res, response: data, message: 'Team Members Fetched Successfully', total });
     } catch (error) {
       Logger.error('SERVER ERROR', error);
       next(error);
@@ -35,7 +35,7 @@ class TeamController {
       const teamUpdateBody = req.body;
       const id = req.params?.id;
       const teamRes = await this.teamService.updateTeamMember(id, teamUpdateBody);
-      return successResponse({ res, response: teamRes, message: 'Team member updated successfully' });
+     successResponse({ res, response: teamRes, message: 'Team member updated successfully' });
     } catch (error) {
       next(error);
     }
@@ -45,7 +45,7 @@ class TeamController {
     try {
       const id = req.params?.id;
       const teamRes = await this.teamService.deleteTeamMember(id);
-      return successResponse({ res, response: teamRes, message: 'Team member deleted successfully' });
+     successResponse({ res, response: teamRes, message: 'Team member deleted successfully' });
     } catch (error) {
       next(error);
     }
@@ -55,7 +55,7 @@ class TeamController {
     try {
       const id = req.params?.id;
       const teamRes = await this.teamService.toggleActivateStatus(id);
-      return successResponse({ res, response: teamRes, message: 'Team member status updated successfully' });
+     successResponse({ res, response: teamRes, message: 'Team member status updated successfully' });
     } catch (error) {
       next(error);
     }

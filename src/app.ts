@@ -8,7 +8,6 @@ import cors from 'cors';
 
 // ALL FEATURE ROUTES
 import teamRouter from '@features/team/team.route';
-import organizationRouter from '@features/organization/organization.route';
 import airportRouter from '@features/airport/airport.route';
 import vendorRouter from '@features/vendor/vendor.route';
 import authRouter from 'auth/auth.router';
@@ -24,8 +23,7 @@ import invoiceItemRouter from '@features/invoicefield/invoiceitem.route';
 import financeRouter from '@features/finance/finance.route';
 import excelRouter from '@features/excel/excel.route';
 import rateSheetMasterRouter from '@features/ratemaster/ratemaster.route';
-import userRoutes from 'features/user/user.route';
-
+import customerRouter from '@features/customer/customer.route';
 dotenv.config();
 
 const app = express();
@@ -56,9 +54,7 @@ app.use('/api/invoiceitem', validateToken, invoiceItemRouter)
 app.use('/api/finance', financeRouter)
 app.use('/api/excel', excelRouter)
 app.use('/api/rate-sheet', rateSheetMasterRouter)
-app.use('/api/organization', organizationRouter);
-app.use('/api/users', userRoutes);
-
+app.use('/api/customer', customerRouter);
 
 // GLOBAL ERROR HANDLER
 app.use(errorHandler);
