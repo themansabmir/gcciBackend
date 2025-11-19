@@ -17,7 +17,7 @@ import { validateToken } from '@middleware/routeProtector';
 import mblRouter from '@features/mbl/mbl.route';
 import hblRouter from '@features/hbl/hbl.router';
 import { errorHandler } from '@middleware/error-handler';
-import { apiLogger } from '@middleware/api-logger';
+// import { apiLogger } from '@middleware/api-logger';
 import { generalLimiter, authLimiter } from '@middleware/rate-limiter';
 import invoiceItemRouter from '@features/invoicefield/invoiceitem.route';
 import financeRouter from '@features/finance/finance.route';
@@ -36,7 +36,7 @@ app.use(express.json());
 app.use(generalLimiter);
 
 // Global API Logger Middleware
-app.use(apiLogger);
+// app.use(apiLogger);
 
 app.get('/', (req, res) => {
   res.status(200).json({ message: 'GCO Backend API is running!' });
@@ -51,10 +51,10 @@ app.use('/api/airport', validateToken, airportRouter);
 app.use('/api/port', portRouter);
 app.use('/api/mbl', validateToken, mblRouter);
 app.use('/api/hbl', validateToken, hblRouter);
-app.use('/api/invoiceitem', validateToken, invoiceItemRouter)
-app.use('/api/finance', financeRouter)
-app.use('/api/excel', excelRouter)
-app.use('/api/rate-sheet', rateSheetMasterRouter)
+app.use('/api/invoiceitem', validateToken, invoiceItemRouter);
+app.use('/api/finance', financeRouter);
+app.use('/api/excel', excelRouter);
+app.use('/api/rate-sheet', rateSheetMasterRouter);
 app.use('/api/customer', customerRouter);
 app.use('/api/quotation', validateToken, quotationRouter);
 

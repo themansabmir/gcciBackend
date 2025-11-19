@@ -1,14 +1,14 @@
-import { Types } from "mongoose";
-import { Logger } from "@lib/logger";
-import JwtService from "@lib/jwt";
-import { mailer } from "@lib/mail";
-import BcryptService from "@lib/bcrypt";
-import { renderTemplate } from "@lib/pugRenderer";
-import { CustomerRepository } from "./customer.repository";
-import { SignupBody, LoginBody, ForgotPasswordBody, InviteCustomerBody, ResetPasswordBody } from "./customer.dto";
-import OrganizationRepository from "../organization/organization.repository";
-import { VendorRepository } from "../vendor/vendor.repository";
-import { VendorEntity } from "../vendor/vendor.entity";
+import { Types } from 'mongoose';
+import { Logger } from '@lib/logger';
+import JwtService from '@lib/jwt';
+import { mailer } from '@lib/mail';
+import BcryptService from '@lib/bcrypt';
+import { renderTemplate } from '@lib/pugRenderer';
+import { CustomerRepository } from './customer.repository';
+import { SignupBody, LoginBody, ForgotPasswordBody, InviteCustomerBody, ResetPasswordBody } from './customer.dto';
+import OrganizationRepository from '../organization/organization.repository';
+import { VendorRepository } from '../vendor/vendor.repository';
+import { VendorEntity } from '../vendor/vendor.entity';
 
 export default class CustomerService {
   private customerRepository: CustomerRepository;
@@ -18,10 +18,10 @@ export default class CustomerService {
   private bcryptService: BcryptService;
 
   constructor(
-    customerRepository: CustomerRepository, 
+    customerRepository: CustomerRepository,
     organizationRepository: OrganizationRepository,
     vendorRepository: VendorRepository,
-    jwtService: JwtService, 
+    jwtService: JwtService,
     bcryptService: BcryptService
   ) {
     this.customerRepository = customerRepository;
@@ -58,18 +58,20 @@ export default class CustomerService {
           vendor_type: ['shipper'] as any, // Default type for customer signups
           credit_days: '15', // Default value
           pan_number: body.pan_number,
-          locations: [{
-            city: body.city,
-            address: body.address,
-            state: body.state,
-            country: body.country,
-            pin_code: body.pin_code,
-            telephone: '', // Optional, can be added to signup form
-            mobile_number: body.mobile_number,
-            fax: '', // Optional
-            gst_number: body.gst_number,
-            pan_number: body.pan_number,
-          }],
+          locations: [
+            {
+              city: body.city,
+              address: body.address,
+              state: body.state,
+              country: body.country,
+              pin_code: body.pin_code,
+              telephone: '', // Optional, can be added to signup form
+              mobile_number: body.mobile_number,
+              fax: '', // Optional
+              gst_number: body.gst_number,
+              pan_number: body.pan_number,
+            },
+          ],
         });
         vendorId = newVendor._id as Types.ObjectId;
         Logger.info(`New vendor created with PAN: ${body.pan_number}`);
@@ -106,16 +108,14 @@ export default class CustomerService {
       });
 
       // Generate confirmation token (valid for 7 days)
-      const confirmToken = await this.jwtService.generateToken(
-        { id: customer._id, email: customer.email }, 
-        { expiresIn: '7d' }
-      );
+      const confirmToken = await this.jwtService.generateToken({ id: customer._id, email: customer.email }, { expiresIn: '7d' });
+      console.log('Confirm Token:', confirmToken);
       const confirmLink = `${process.env.FRONTEND_URL}/confirm-account?token=${confirmToken}`;
 
       // Send confirmation email
-      const html = renderTemplate('confirmAccount', { 
-        name: customer.name || customer.email, 
-        confirmLink 
+      const html = renderTemplate('confirmAccount', {
+        name: customer.name || customer.email,
+        confirmLink,
       });
 
       await mailer.sendMail({
@@ -125,7 +125,7 @@ export default class CustomerService {
       });
 
       Logger.info(`Signup successful for ${customer.email}, organization: ${organization._id}, vendor: ${vendorId}`);
-      return { 
+      return {
         message: 'Signup successful. Please check your email to confirm your account.',
         organizationId: organization._id,
         customerId: customer._id,
@@ -166,16 +166,17 @@ export default class CustomerService {
         throw new Error('Organization not approved yet');
       }
 
-      const token = await this.jwtService.generateToken({ 
+      const token = await this.jwtService.generateToken({
         id: customer._id,
         email: customer.email,
         role: customer.role,
         organizationId: customer.organizationId,
+        is_active: customer.status === 'active',
       });
 
       Logger.info(`Login successful for ${customer.email}`);
-      return { 
-        message: 'Login successful', 
+      return {
+        message: 'Login successful',
         token,
         customer: {
           id: customer._id,
@@ -183,7 +184,7 @@ export default class CustomerService {
           name: customer.name,
           role: customer.role,
           organizationId: customer.organizationId,
-        }
+        },
       };
     } catch (error: any) {
       Logger.error('Error in login service', {
@@ -204,15 +205,12 @@ export default class CustomerService {
         throw new Error('Customer not found');
       }
 
-      const resetToken = await this.jwtService.generateToken(
-        { id: customer._id, email: customer.email }, 
-        { expiresIn: '15m' }
-      );
+      const resetToken = await this.jwtService.generateToken({ id: customer._id, email: customer.email }, { expiresIn: '15m' });
       const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
-      const html = renderTemplate('forgotPassword', { 
-        name: customer.name || customer.email, 
-        resetLink 
+      const html = renderTemplate('forgotPassword', {
+        name: customer.name || customer.email,
+        resetLink,
       });
 
       await mailer.sendMail({
@@ -238,12 +236,12 @@ export default class CustomerService {
   public async inviteCustomer(body: InviteCustomerBody, organizationId: string) {
     try {
       if (!Types.ObjectId.isValid(organizationId)) {
-        throw new Error("Invalid organization ID");
+        throw new Error('Invalid organization ID');
       }
 
       const existingCustomer = await this.customerRepository.findOne({ email: body.email }).exec();
       if (existingCustomer) {
-        throw new Error("Customer already exists");
+        throw new Error('Customer already exists');
       }
 
       // Generate random temp password and hash it
@@ -260,7 +258,7 @@ export default class CustomerService {
         password: hashedPassword,
         role: body.role || 'customer',
         organizationId: new Types.ObjectId(organizationId),
-        status: "invited",
+        status: 'invited',
         isVerified: false,
         inviteToken: token,
         inviteExpiresAt: expiresAt,
@@ -269,29 +267,29 @@ export default class CustomerService {
       // Get organization name for email
       const organization = await this.organizationRepository.findById(organizationId);
       if (!organization) {
-        throw new Error("Organization not found");
+        throw new Error('Organization not found');
       }
 
       const invitationLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
-      const html = renderTemplate('inviteEmail', { 
-        email: body.email, 
+      const html = renderTemplate('inviteEmail', {
+        email: body.email,
         invitationLink,
         temporaryPassword: randomPassword,
-        organizationName: organization.name
+        organizationName: organization.name,
       });
 
       await mailer.sendMail({
         to: body.email,
-        subject: "You are invited to join our organization",
+        subject: 'You are invited to join our organization',
         html,
       });
 
-      Logger.info("Customer invitation created", { email: body.email, organizationId });
+      Logger.info('Customer invitation created', { email: body.email, organizationId });
       return {
         id: newCustomer._id,
         email: newCustomer.email,
-        status: newCustomer.status
+        status: newCustomer.status,
       };
     } catch (error: any) {
       Logger.error('Error in inviteCustomer service', {
@@ -311,7 +309,7 @@ export default class CustomerService {
     try {
       const decoded = await this.jwtService.verify(body.token);
       const customer = await this.customerRepository.findOne({ email: decoded.email }).exec();
-      
+
       if (!customer) {
         throw new Error('Invalid or expired token');
       }
@@ -325,14 +323,16 @@ export default class CustomerService {
       }
 
       const hashedPassword = await this.bcryptService.hash(body.newPassword);
-      
-      await this.customerRepository.updateById(String(customer._id), {
-        password: hashedPassword,
-        status: 'active',
-        isVerified: true,
-        inviteToken: undefined,
-        inviteExpiresAt: undefined,
-      }).exec();
+
+      await this.customerRepository
+        .updateById(String(customer._id), {
+          password: hashedPassword,
+          status: 'active',
+          isVerified: true,
+          inviteToken: undefined,
+          inviteExpiresAt: undefined,
+        })
+        .exec();
 
       Logger.info(`Password reset for customer ${customer.email}`);
       return { message: 'Password reset successful. You can now login.' };
@@ -352,14 +352,14 @@ export default class CustomerService {
     try {
       // Verify token
       const decoded = await this.jwtService.verify(token);
-      
+
       if (!decoded.id || !decoded.email) {
         throw new Error('Invalid confirmation token');
       }
 
       // Find customer
       const customer = await this.customerRepository.findById(decoded.id);
-      
+
       if (!customer) {
         throw new Error('Customer not found');
       }
@@ -370,9 +370,11 @@ export default class CustomerService {
       }
 
       // Update customer to verified
-      await this.customerRepository.updateById(String(customer._id), {
-        isVerified: true,
-      }).exec();
+      await this.customerRepository
+        .updateById(String(customer._id), {
+          isVerified: true,
+        })
+        .exec();
 
       Logger.info(`Account confirmed for customer ${customer.email}`);
       return { message: 'Account confirmed successfully. You can now login.' };
@@ -381,6 +383,49 @@ export default class CustomerService {
         message: error.message,
         stack: error.stack,
       });
+      throw error;
+    }
+  }
+
+  async getCustomerProfile(customerId: string) {
+    try {
+      const customer = await this.customerRepository.findById(customerId);
+      if (!customer) {
+        throw new Error('Customer not found');
+      }
+
+      const { password, inviteToken, inviteExpiresAt, ...customerProfile } = customer.toObject();
+      return customerProfile;
+    } catch (error) {
+      Logger.error('Error fetching customer profile:', error);
+      throw error;
+    }
+  }
+
+  async updateCustomerProfile(customerId: string, updateData: { name?: string }) {
+    try {
+      const customer = await this.customerRepository.findById(customerId);
+      if (!customer) {
+        throw new Error('Customer not found');
+      }
+
+      // Only allow updating specific fields
+      const allowedUpdates: { name?: string } = {};
+      if (updateData.name !== undefined) {
+        allowedUpdates.name = updateData.name;
+      }
+
+      const updatedCustomer = await this.customerRepository.updateById(customerId, allowedUpdates);
+
+      if (!updatedCustomer) {
+        throw new Error('Failed to update customer profile');
+      }
+
+      // Return updated customer without sensitive data
+      const { password, inviteToken, inviteExpiresAt, ...customerProfile } = updatedCustomer.toObject();
+      return customerProfile;
+    } catch (error) {
+      Logger.error('Error updating customer profile:', error);
       throw error;
     }
   }
