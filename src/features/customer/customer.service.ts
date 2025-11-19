@@ -109,7 +109,6 @@ export default class CustomerService {
 
       // Generate confirmation token (valid for 7 days)
       const confirmToken = await this.jwtService.generateToken({ id: customer._id, email: customer.email }, { expiresIn: '7d' });
-      console.log('Confirm Token:', confirmToken);
       const confirmLink = `${process.env.FRONTEND_URL}/confirm-account?token=${confirmToken}`;
 
       // Send confirmation email
