@@ -12,7 +12,7 @@ export const signupSchema = z.object({
   mobile_number: z.string().min(10),
   gst_number: z.string().min(15),
   pan_number: z.string().min(10),
-  
+
   // Admin customer details
   email: z.string().email(),
   password: z.string().min(8),
@@ -52,3 +52,9 @@ export const confirmAccountSchema = z.object({
   token: z.string(),
 });
 export type ConfirmAccountBody = z.infer<typeof confirmAccountSchema>;
+
+// Add to customer.dto.ts
+export const updateCustomerSchema = z.object({
+  name: z.string().min(5).optional(),
+});
+export type UpdateCustomerBody = z.infer<typeof updateCustomerSchema>;

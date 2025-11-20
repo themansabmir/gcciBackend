@@ -6,7 +6,15 @@ import CustomerService from './customer.service';
 import { Logger } from '@lib/logger';
 import JwtService from '@lib/jwt';
 import BcryptService from '@lib/bcrypt';
-import { SignupBody, LoginBody, ForgotPasswordBody, InviteCustomerBody, ResetPasswordBody, ConfirmAccountBody } from './customer.dto';
+import {
+  SignupBody,
+  LoginBody,
+  ForgotPasswordBody,
+  InviteCustomerBody,
+  ResetPasswordBody,
+  ConfirmAccountBody,
+  UpdateCustomerBody,
+} from './customer.dto';
 import OrganizationRepository from '../organization/organization.repository';
 import { VendorRepository } from '../vendor/vendor.repository';
 import { VendorEntity } from '../vendor/vendor.entity';
@@ -31,6 +39,8 @@ class CustomerController {
         response: {
           organizationId: result.organizationId,
           customerId: result.customerId,
+          vendorId: result.vendorId,
+          vendorExists: result.vendorExists,
         },
       });
     } catch (error) {
@@ -83,7 +93,7 @@ class CustomerController {
   public inviteCustomer: RequestHandler<{}, any, InviteCustomerBody> = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const organizationId = req.user?.organizationId;
-      
+
       if (!organizationId) {
         throw new Error('Organization ID not found in token');
       }
@@ -131,6 +141,32 @@ class CustomerController {
       });
     } catch (error) {
       Logger.error('Error confirming account', { error });
+      next(error);
+    }
+  };
+  public getProfile: RequestHandler<{}, any> = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const customerId = req.user?.id;
+
+      const customerProfile = await this.customerService.getCustomerProfile(customerId);
+
+      successResponse({ res, response: customerProfile, message: 'Customer profile fetched successfully' });
+    } catch (error: any) {
+      Logger.error('Error fetching customer profile', { error });
+      next(error);
+    }
+  };
+
+  public updateProfile: RequestHandler<{}, any, UpdateCustomerBody> = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const customerId = req.user?.id;
+      const updateData = req.body;
+
+      const updatedCustomer = await this.customerService.updateCustomerProfile(customerId, updateData);
+
+      successResponse({ res, response: updatedCustomer, message: 'Customer profile updated successfully' });
+    } catch (error: any) {
+      Logger.error('Error updating customer profile', { error });
       next(error);
     }
   };
