@@ -50,6 +50,7 @@ export type ResetPasswordBody = z.infer<typeof resetPasswordSchema>;
 // Confirm Account
 export const confirmAccountSchema = z.object({
   token: z.string(),
+  newPassword: z.string().min(6),
 });
 export type ConfirmAccountBody = z.infer<typeof confirmAccountSchema>;
 
