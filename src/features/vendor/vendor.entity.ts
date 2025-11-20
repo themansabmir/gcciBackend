@@ -7,9 +7,9 @@ const LocationSchema = new Schema({
   state: { type: String, required: true },
   country: { type: String, required: true },
   pin_code: { type: String, required: true },
-  telephone: { type: String, required: true },
+  telephone: { type: String, required: false },
   mobile_number: { type: String, required: true },
-  fax: { type: String, required: true },
+  fax: { type: String, required: false },
   gst_number: { type: String, required: true },
 });
 
@@ -24,8 +24,7 @@ const VendorSchema = new Schema<IVendor>(
       required: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 export const VendorEntity = model<IVendor>('Vendor', VendorSchema);
-
