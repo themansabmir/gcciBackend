@@ -80,6 +80,7 @@ class CustomerController {
       successResponse({
         res,
         message: result.message,
+        response: result.resetToken,
       });
     } catch (error) {
       Logger.error('Error in forgot password', { error });
