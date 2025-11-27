@@ -5,10 +5,9 @@ import { mailer } from '@lib/mail';
 import BcryptService from '@lib/bcrypt';
 import { renderTemplate } from '@lib/pugRenderer';
 import { CustomerRepository } from './customer.repository';
-import { SignupBody, LoginBody, ForgotPasswordBody, InviteCustomerBody, ResetPasswordBody } from './customer.dto';
+import { SignupBody, LoginBody, ForgotPasswordBody, InviteCustomerBody, ResetPasswordBody, ConfirmAccountBody } from './customer.dto';
 import OrganizationRepository from '../organization/organization.repository';
 import { VendorRepository } from '../vendor/vendor.repository';
-import { VendorEntity } from '../vendor/vendor.entity';
 
 export default class CustomerService {
   private customerRepository: CustomerRepository;
@@ -36,14 +35,28 @@ export default class CustomerService {
    */
   public async signup(body: SignupBody) {
     try {
+      Logger.info('Signup initiated', {
+        email: body.email,
+        organizationName: body.organizationName,
+        pan_number: body.pan_number,
+      });
+
       // Check if customer already exists
       const existingCustomer = await this.customerRepository.findOne({ email: body.email }).exec();
       if (existingCustomer) {
+        Logger.info('Signup blocked: customer already exists', {
+          email: body.email,
+        });
         throw new Error('Email already exists');
       }
 
       // Check if vendor exists with this PAN number
       const existingVendor = await this.vendorRepository.findOne({ pan_number: body.pan_number }).exec();
+
+      Logger.info('Vendor lookup completed for signup', {
+        pan_number: body.pan_number,
+        vendorFound: !!existingVendor,
+      });
 
       let vendorId: Types.ObjectId | undefined;
 
@@ -53,6 +66,10 @@ export default class CustomerService {
         Logger.info(`Vendor already exists with PAN: ${body.pan_number}, linking to organization`);
       } else {
         // Vendor doesn't exist - create new vendor
+        Logger.info('Creating new vendor for signup', {
+          pan_number: body.pan_number,
+          organizationName: body.organizationName,
+        });
         const newVendor = await this.vendorRepository.create({
           vendor_name: body.organizationName,
           vendor_type: ['shipper'] as any, // Default type for customer signups
@@ -78,6 +95,11 @@ export default class CustomerService {
       }
 
       // Create organization with vendor reference
+      Logger.info('Creating organization for signup', {
+        organizationName: body.organizationName,
+        pan_number: body.pan_number,
+        vendorId,
+      });
       const organization = await this.organizationRepository.create({
         name: body.organizationName,
         city: body.city,
@@ -93,10 +115,22 @@ export default class CustomerService {
         is_active: true,
       });
 
+      Logger.info('Organization created for signup', {
+        organizationId: organization._id,
+        email: body.email,
+      });
+
       // Hash password
+      Logger.info('Hashing password for new customer signup', {
+        email: body.email,
+      });
       const hashedPassword = await this.bcryptService.hash(body.password);
 
       // Create admin customer
+      Logger.info('Creating admin customer for signup', {
+        email: body.email,
+        organizationId: organization._id,
+      });
       const customer = await this.customerRepository.create({
         name: body.name,
         email: body.email,
@@ -107,9 +141,20 @@ export default class CustomerService {
         isVerified: false,
       });
 
+      Logger.info('Admin customer created for signup', {
+        customerId: customer._id,
+        email: customer.email,
+        organizationId: organization._id,
+      });
+
       // Generate confirmation token (valid for 7 days)
       const confirmToken = await this.jwtService.generateToken({ id: customer._id, email: customer.email }, { expiresIn: '7d' });
       const confirmLink = `${process.env.FRONTEND_URL}/confirm-account?token=${confirmToken}`;
+
+      Logger.info('Confirmation token generated for signup', {
+        customerId: customer._id,
+        email: customer.email,
+      });
 
       // Send confirmation email
       const html = renderTemplate('confirmAccount', {
@@ -205,6 +250,7 @@ export default class CustomerService {
       }
 
       const resetToken = await this.jwtService.generateToken({ id: customer._id, email: customer.email }, { expiresIn: '15m' });
+      Logger.info(`Reset token generated for ${customer.email}, token: ${resetToken}`);
       const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
       const html = renderTemplate('forgotPassword', {
@@ -307,31 +353,33 @@ export default class CustomerService {
   public async resetPassword(body: ResetPasswordBody) {
     try {
       const decoded = await this.jwtService.verify(body.token);
+
+      if (!decoded || !decoded.email) {
+        throw new Error('Invalid or expired token');
+      }
+
       const customer = await this.customerRepository.findOne({ email: decoded.email }).exec();
 
       if (!customer) {
         throw new Error('Invalid or expired token');
       }
 
-      if (customer.inviteToken !== body.token) {
-        throw new Error('Invalid token');
-      }
-
-      if (customer.inviteExpiresAt && customer.inviteExpiresAt < new Date()) {
-        throw new Error('Token has expired');
-      }
+      Logger.info(`Decoded customer ${customer._id}`);
 
       const hashedPassword = await this.bcryptService.hash(body.newPassword);
 
-      await this.customerRepository
-        .updateById(String(customer._id), {
-          password: hashedPassword,
-          status: 'active',
-          isVerified: true,
-          inviteToken: undefined,
-          inviteExpiresAt: undefined,
-        })
-        .exec();
+      const updatePayload: any = {
+        password: hashedPassword,
+      };
+
+      if (customer.status === 'invited') {
+        updatePayload.status = 'active';
+        updatePayload.isVerified = true;
+        updatePayload.inviteToken = undefined;
+        updatePayload.inviteExpiresAt = undefined;
+      }
+
+      await this.customerRepository.updateById(String(customer._id), updatePayload).exec();
 
       Logger.info(`Password reset for customer ${customer.email}`);
       return { message: 'Password reset successful. You can now login.' };
@@ -348,17 +396,17 @@ export default class CustomerService {
   /**
    * Confirm customer account via email link
    */
-  public async confirmAccount(token: string) {
+  public async confirmAccount(body: ConfirmAccountBody) {
     try {
       // Verify token
-      const decoded = await this.jwtService.verify(token);
-
-      if (!decoded.id || !decoded.email) {
-        throw new Error('Invalid confirmation token');
+      const decoded = await this.jwtService.verify(body.token);
+      if (!decoded || !decoded.email) {
+        throw new Error('Invalid or expired token');
       }
 
-      // Find customer
-      const customer = await this.customerRepository.findById(decoded.id);
+      const customer = await this.customerRepository.findOne({ email: decoded.email }).exec();
+
+      console.log(decoded);
 
       if (!customer) {
         throw new Error('Customer not found');
@@ -368,11 +416,14 @@ export default class CustomerService {
       if (customer.isVerified) {
         return { message: 'Account already confirmed. You can login now.' };
       }
+      const hashedPassword = await this.bcryptService.hash(body.newPassword);
 
       // Update customer to verified
       await this.customerRepository
         .updateById(String(customer._id), {
           isVerified: true,
+          password: hashedPassword,
+          status: 'active',
         })
         .exec();
 
@@ -394,7 +445,7 @@ export default class CustomerService {
         throw new Error('Customer not found');
       }
 
-      const { password, inviteToken, inviteExpiresAt, ...customerProfile } = customer.toObject();
+      const { ...customerProfile } = customer.toObject();
       return customerProfile;
     } catch (error) {
       Logger.error('Error fetching customer profile:', error);
@@ -422,7 +473,7 @@ export default class CustomerService {
       }
 
       // Return updated customer without sensitive data
-      const { password, inviteToken, inviteExpiresAt, ...customerProfile } = updatedCustomer.toObject();
+      const { ...customerProfile } = updatedCustomer.toObject();
       return customerProfile;
     } catch (error) {
       Logger.error('Error updating customer profile:', error);

@@ -33,7 +33,7 @@ app.use(cors());
 app.use(express.json());
 
 // Global Rate Limiter - Apply to all requests
-app.use(generalLimiter);
+// app.use(generalLimiter);
 
 // Global API Logger Middleware
 // app.use(apiLogger);
@@ -43,7 +43,7 @@ app.get('/', (req, res) => {
 });
 // APP ROUTES
 // Auth routes with strict rate limiting to prevent brute force
-app.use('/api', authLimiter, authRouter);
+app.use('/api', authRouter);
 app.use('/api/shipment', validateToken, shipmentRouter);
 app.use('/api/team', validateToken, teamRouter);
 app.use('/api/vendor', vendorRouter);
