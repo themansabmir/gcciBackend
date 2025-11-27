@@ -265,7 +265,7 @@ export default class CustomerService {
       });
 
       Logger.info(`Password reset link sent to ${customer.email}`);
-      return { message: 'Password reset link sent successfully' };
+      return { message: 'Password reset link sent successfully', resetToken };
     } catch (error: any) {
       Logger.error('Error in forgotPassword service', {
         message: error.message,
@@ -387,6 +387,7 @@ export default class CustomerService {
       Logger.error('Error in resetPassword service', {
         message: error.message,
         stack: error.stack,
+        error,
       });
       throw error;
     }

@@ -56,7 +56,7 @@ app.use('/api/finance', financeRouter);
 app.use('/api/excel', excelRouter);
 app.use('/api/rate-sheet', rateSheetMasterRouter);
 app.use('/api/customer', customerRouter);
-app.use('/api/quotation', validateToken, quotationRouter);
+app.use('/api/quotation', quotationRouter);
 
 // GLOBAL ERROR HANDLER
 app.use(errorHandler);

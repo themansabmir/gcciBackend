@@ -1,0 +1,190 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Quotation - #{quotationNumber}
+    style.
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #ffffff;
+        color: #333;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 20px;
+      }
+      .logo {
+        font-size: 28px;
+        font-weight: 700;
+        color: #667eea;
+      }
+      .company-info {
+        text-align: right;
+        font-size: 14px;
+        color: #666;
+      }
+      .quotation-title {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+      .quotation-title h1 {
+        margin: 0;
+        font-size: 32px;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+      .quotation-title p {
+        margin: 5px 0 0;
+        color: #666;
+        font-size: 16px;
+      }
+      .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        margin-bottom: 40px;
+      }
+      .details-box h3 {
+        margin: 0 0 10px 0;
+        color: #667eea;
+        font-size: 16px;
+        text-transform: uppercase;
+      }
+      .details-box p {
+        margin: 5px 0;
+        font-size: 14px;
+      }
+      .table-container {
+        margin-bottom: 40px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        background-color: #f8f9fa;
+        color: #333;
+        font-weight: 600;
+        text-align: left;
+        padding: 12px;
+        border-bottom: 2px solid #ddd;
+      }
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+      }
+      .text-right {
+        text-align: right;
+      }
+      .total-section {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 40px;
+      }
+      .total-box {
+        width: 300px;
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+      }
+      .total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      .total-row.final {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 2px solid #ddd;
+        font-weight: 700;
+        font-size: 18px;
+        color: #667eea;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 60px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        font-size: 12px;
+        color: #999;
+      }
+  body
+    .container
+      .header
+        .logo GCCI
+        .company-info
+          p Global Cargo Consolidate India
+          p 123 Logistics Way, New Delhi, India
+          p support@gcci.com | +91 123 456 7890
+
+      .quotation-title
+        h1 Quotation
+        p ##{quotationNumber}
+
+      .details-grid
+        .details-box
+          h3 Bill To
+          p 
+            strong #{customerName}
+          p #{customerEmail}
+        
+        .details-box
+          h3 Quotation Details
+          p 
+            strong Date: 
+            | #{new Date().toLocaleDateString()}
+          p 
+            strong Valid Until: 
+            | #{new Date(validTo).toLocaleDateString()}
+          p 
+            strong Shipping Line: 
+            | #{shippingLineId}
+          p 
+            strong Route: 
+            | #{startPortId} to #{endPortId}
+
+      .table-container
+        table
+          thead
+            tr
+              th Charge Name
+              th HSN Code
+              th Quantity
+              th Currency
+              th.text-right Price
+              th.text-right Total
+          tbody
+            each item in lineItems
+              tr
+                td #{item.chargeName}
+                td #{item.hsnCode}
+                td #{item.quantity}
+                td #{item.currency}
+                td.text-right #{item.price}
+                td.text-right #{(item.price * item.quantity).toFixed(2)}
+
+      .total-section
+        .total-box
+          .total-row.final
+            span Total Amount
+            span #{lineItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}
+
+      .footer
+        p This is a computer-generated quotation and does not require a signature.
+        p Terms and conditions apply.

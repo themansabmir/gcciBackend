@@ -1,8 +1,17 @@
 import { quotationRepository } from './quotation.repository';
-import { CreateQuotationDTO, QUOTATION_STATUS, QuotationFilters, UpdateQuotationDTO, CreateQuotationLineItemDTO, IQuotationLineItem } from './quotation.types';
+import {
+  CreateQuotationDTO,
+  QUOTATION_STATUS,
+  QuotationFilters,
+  UpdateQuotationDTO,
+  CreateQuotationLineItemDTO,
+  IQuotationLineItem,
+} from './quotation.types';
 import nodemailer from 'nodemailer';
 import { IQuery } from '../vendor/vendor.types';
 import { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } from '../../config/env';
+import puppeteer from 'puppeteer';
+import { renderTemplate } from '../../lib/pugRenderer';
 
 class QuotationService {
   private generateQuotationNumber(): string {
@@ -111,10 +120,30 @@ class QuotationService {
       to: quotation.customerEmail,
       subject: `Quotation ${quotation.quotationNumber}`,
       text: 'Here is your quotation.',
-      // You can also generate a PDF and attach it here
     });
 
     return this.changeStatus(id, QUOTATION_STATUS.SENT);
+  }
+
+  async generateQuotationPDF(id: string): Promise<Buffer> {
+    const quotation = await this.getQuotationById(id);
+    if (!quotation) {
+      throw new Error('Quotation not found');
+    }
+
+    const html = renderTemplate('quotation', quotation.toObject());
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+
+    await browser.close();
+
+    return Buffer.from(pdfBuffer);
   }
 }
 

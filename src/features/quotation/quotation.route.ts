@@ -2,15 +2,16 @@ import { Router } from 'express';
 import { quotationController } from './quotation.controller';
 import { CreateQuotationSchema, UpdateQuotationSchema, QuotationFilterSchema } from './quotation.dto';
 
-const router = Router();
+const quotationRouter = Router();
 
-router.post('/', quotationController.createQuotation);
-router.get('/', quotationController.getAllQuotations);
-// router.get('/:id', quotationController.getQuotation);
-router.put('/:id', quotationController.updateQuotation);
-router.delete('/:id', quotationController.deleteQuotation);
-router.patch('/:id/status', quotationController.changeQuotationStatus);
-router.post('/:id/duplicate', quotationController.duplicateQuotation);
-router.post('/:id/send', quotationController.sendQuotation);
+quotationRouter.post('/', quotationController.createQuotation);
+quotationRouter.get('/', quotationController.getAllQuotations);
+// quotationRouter.get('/:id', quotationController.getQuotation);
+quotationRouter.put('/:id', quotationController.updateQuotation);
+quotationRouter.delete('/:id', quotationController.deleteQuotation);
+quotationRouter.patch('/:id/status', quotationController.changeQuotationStatus);
+quotationRouter.post('/:id/duplicate', quotationController.duplicateQuotation);
+quotationRouter.post('/:id/send', quotationController.sendQuotation);
+quotationRouter.get('/:id/pdf', quotationController.downloadQuotationPDF);
 
-export default router;
+export default quotationRouter;
