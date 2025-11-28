@@ -19,6 +19,7 @@ export const LocationSchema = z.object({
   pin_code: z.string().regex(pinCodeRegex, 'Invalid PIN code'),
   telephone: z.string().regex(phoneRegex, 'Invalid telephone number'),
   mobile_number: z.string().regex(mobileRegex, 'Invalid mobile number'),
+  email: z.string().email('Invalid email address').optional(),
   fax: z
     .string()
     .optional()
@@ -31,5 +32,7 @@ export const LocationSchema = z.object({
 export const createVendorDTO = z.object({
   vendor_name: z.string(),
   vendor_type: z.array(VendorTypeEnumSchema),
+  credit_days: z.string(),
+  pan_number: z.string().regex(panRegex, 'Invalid PAN number'),
   locations: z.array(LocationSchema),
 });

@@ -9,6 +9,7 @@ const LocationSchema = new Schema({
   pin_code: { type: String, required: true },
   telephone: { type: String, required: false },
   mobile_number: { type: String, required: true },
+  email: { type: String, required: false },
   fax: { type: String, required: false },
   gst_number: { type: String, required: true },
 });
