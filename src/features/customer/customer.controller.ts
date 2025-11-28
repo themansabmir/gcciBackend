@@ -29,7 +29,7 @@ class CustomerController {
   /**
    * Signup - Register organization and admin customer
    */
-  public signup: RequestHandler<{}, any, SignupBody> = async (req: Request, res: Response, next: NextFunction) => {
+  public signup: RequestHandler<Record<string, never>, any, SignupBody> = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await this.customerService.signup(req.body);
 
@@ -52,7 +52,7 @@ class CustomerController {
   /**
    * Login - Authenticate customer
    */
-  public login: RequestHandler<{}, any, LoginBody> = async (req: Request, res: Response, next: NextFunction) => {
+  public login: RequestHandler<Record<string, never>, any, LoginBody> = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await this.customerService.login(req.body);
 
@@ -73,13 +73,14 @@ class CustomerController {
   /**
    * Forgot Password - Send reset password link
    */
-  public forgotPassword: RequestHandler<{}, any, ForgotPasswordBody> = async (req: Request, res: Response, next: NextFunction) => {
+  public forgotPassword: RequestHandler<Record<string, never>, any, ForgotPasswordBody> = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await this.customerService.forgotPassword(req.body);
 
       successResponse({
         res,
         message: result.message,
+        response: result.resetToken,
       });
     } catch (error) {
       Logger.error('Error in forgot password', { error });
@@ -90,7 +91,7 @@ class CustomerController {
   /**
    * Invite a customer to the organization
    */
-  public inviteCustomer: RequestHandler<{}, any, InviteCustomerBody> = async (req: Request, res: Response, next: NextFunction) => {
+  public inviteCustomer: RequestHandler<Record<string, never>, any, InviteCustomerBody> = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const organizationId = req.user?.organizationId;
 
@@ -114,7 +115,7 @@ class CustomerController {
   /**
    * Reset password with token
    */
-  public resetPassword: RequestHandler<{}, any, ResetPasswordBody> = async (req: Request, res: Response, next: NextFunction) => {
+  public resetPassword: RequestHandler<Record<string, never>, any, ResetPasswordBody> = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await this.customerService.resetPassword(req.body);
 
@@ -131,9 +132,9 @@ class CustomerController {
   /**
    * Confirm account via email link
    */
-  public confirmAccount: RequestHandler<{}, any, ConfirmAccountBody> = async (req: Request, res: Response, next: NextFunction) => {
+  public confirmAccount: RequestHandler<Record<string, never>, any, ConfirmAccountBody> = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await this.customerService.confirmAccount(req.body.token);
+      const result = await this.customerService.confirmAccount(req.body);
 
       successResponse({
         res,
@@ -144,7 +145,7 @@ class CustomerController {
       next(error);
     }
   };
-  public getProfile: RequestHandler<{}, any> = async (req: Request, res: Response, next: NextFunction) => {
+  public getProfile: RequestHandler<Record<string, never>, any> = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const customerId = req.user?.id;
 
@@ -157,7 +158,7 @@ class CustomerController {
     }
   };
 
-  public updateProfile: RequestHandler<{}, any, UpdateCustomerBody> = async (req: Request, res: Response, next: NextFunction) => {
+  public updateProfile: RequestHandler<Record<string, never>, any, UpdateCustomerBody> = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const customerId = req.user?.id;
       const updateData = req.body;

@@ -26,7 +26,8 @@ class QuotationController {
   async getAllQuotations(req: Request, res: Response, next: NextFunction) {
     try {
       const { page, limit, sortBy, sortOrder, search, ...filters } = req.query as any;
-      const quotations = await quotationService.getAllQuotations({ page, limit, sortBy, sortOrder, search }, filters);
+      const cleanedFilters = Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== ''));
+      const quotations = await quotationService.getAllQuotations({ page, limit, sortBy, sortOrder, search }, cleanedFilters);
       res.status(200).json(quotations);
     } catch (error) {
       next(error);
@@ -83,10 +84,26 @@ class QuotationController {
     try {
       const { vendorId } = req.body;
       if (!vendorId) {
-        return res.status(400).json({ message: 'vendorId is required in body' });
+        res.status(400).json({ message: 'vendorId is required in body' });
       }
       const result = await quotationService.sendQuotationToVendor(req.params.id, vendorId);
       res.status(200).json({ message: 'Email sent', result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async downloadQuotationPDF(req: Request, res: Response, next: NextFunction) {
+    try {
+      const pdfBuffer = await quotationService.generateQuotationPDF(req.params.id);
+
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="quotation-${req.params.id}.pdf"`,
+        'Content-Length': pdfBuffer.length,
+      });
+
+      res.send(pdfBuffer);
     } catch (error) {
       next(error);
     }

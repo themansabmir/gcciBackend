@@ -14,6 +14,9 @@ import { VendorRepository } from '../vendor/vendor.repository';
 import { VendorEntity } from '../vendor/vendor.entity';
 import PortRepository from '../port/port.repository';
 import PortModel from '../port/port.entity';
+import nodemailer from 'nodemailer';
+import { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } from '../../config/env';
+import puppeteer from 'puppeteer';
 
 class QuotationService {
   private generateQuotationNumber(): string {
@@ -120,7 +123,7 @@ class QuotationService {
         // changeStatus returns the updated quotation
         // await and assign so we return the latest document
         // (preserves previous return behavior)
-         
+
         // @ts-expect-error: updatedQuotation type mismatch with changeStatus return type
         updatedQuotation = await this.changeStatus(id, QUOTATION_STATUS.SENT);
       }
@@ -212,6 +215,27 @@ class QuotationService {
     }
 
     return { info, vendorId, to: vendorEmail };
+  }
+
+  async generateQuotationPDF(id: string): Promise<Buffer> {
+    const quotation = await this.getQuotationById(id);
+    if (!quotation) {
+      throw new Error('Quotation not found');
+    }
+
+    const html = renderTemplate('quotation', quotation.toObject());
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+
+    await browser.close();
+
+    return Buffer.from(pdfBuffer);
   }
 }
 
