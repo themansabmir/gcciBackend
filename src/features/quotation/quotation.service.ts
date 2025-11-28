@@ -1,8 +1,19 @@
 import { quotationRepository } from './quotation.repository';
-import { CreateQuotationDTO, QUOTATION_STATUS, QuotationFilters, UpdateQuotationDTO, CreateQuotationLineItemDTO, IQuotationLineItem } from './quotation.types';
-import nodemailer from 'nodemailer';
+import {
+  CreateQuotationDTO,
+  QUOTATION_STATUS,
+  QuotationFilters,
+  UpdateQuotationDTO,
+  CreateQuotationLineItemDTO,
+  IQuotationLineItem,
+} from './quotation.types';
 import { IQuery } from '../vendor/vendor.types';
-import { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } from '../../config/env';
+import { renderTemplate } from '../../lib/pugRenderer';
+import { mailer } from '../../lib/mail';
+import { VendorRepository } from '../vendor/vendor.repository';
+import { VendorEntity } from '../vendor/vendor.entity';
+import PortRepository from '../port/port.repository';
+import PortModel from '../port/port.entity';
 
 class QuotationService {
   private generateQuotationNumber(): string {
@@ -96,25 +107,111 @@ class QuotationService {
       throw new Error('Quotation not found');
     }
 
-    const transporter = nodemailer.createTransport({
-      host: EMAIL_HOST,
-      port: EMAIL_PORT,
-      secure: false,
-      auth: {
-        user: EMAIL_USER,
-        pass: EMAIL_PASS,
-      },
-    });
-
-    await transporter.sendMail({
-      from: 'your-email@example.com',
+    const info = await mailer.sendMail({
       to: quotation.customerEmail,
       subject: `Quotation ${quotation.quotationNumber}`,
-      text: 'Here is your quotation.',
-      // You can also generate a PDF and attach it here
+      html: `<p>Here is your quotation.</p>`,
     });
 
-    return this.changeStatus(id, QUOTATION_STATUS.SENT);
+    // Mark quotation as SENT when email is dispatched, but only if it's not already SENT
+    let updatedQuotation = quotation;
+    try {
+      if ((quotation as any).status !== QUOTATION_STATUS.SENT) {
+        // changeStatus returns the updated quotation
+        // await and assign so we return the latest document
+        // (preserves previous return behavior)
+         
+        // @ts-expect-error: updatedQuotation type mismatch with changeStatus return type
+        updatedQuotation = await this.changeStatus(id, QUOTATION_STATUS.SENT);
+      }
+    } catch (err) {
+      console.warn('Could not change quotation status:', (err as Error).message);
+    }
+
+    return updatedQuotation;
+  }
+
+  /**
+   * Send quotation HTML email (Pug template) to a vendor.
+   * Accepts vendorId, fetches vendor details including email from locations,
+   * and port names from port entities.
+   */
+  async sendQuotationToVendor(id: string, vendorId: string) {
+    const quotation = await this.getQuotationById(id);
+    if (!quotation) {
+      throw new Error('Quotation not found');
+    }
+
+    // Fetch vendor to get email from first location
+    const vendorRepository = new VendorRepository(VendorEntity);
+    const vendor = await vendorRepository.findById(vendorId);
+    if (!vendor) {
+      throw new Error('Vendor not found');
+    }
+
+    // Resolve a valid vendor email address. Prefer explicit email fields if present.
+    const locationEmail = vendor.locations?.find((l: any) => l.email)?.email;
+    const vendorEmail = (vendor as any).email || (vendor as any).contact_email || locationEmail;
+    if (!vendorEmail) {
+      // Provide a clearer error so caller can fix vendor data instead of getting mailer "No recipients defined"
+      throw new Error('Vendor does not have an email address. Add an `email` field to vendor or one of its locations before sending.');
+    }
+    // Fetch port names
+    const portRepository = new PortRepository(PortModel);
+    const startPort = await portRepository.findById((quotation as any).startPortId);
+    const endPort = await portRepository.findById((quotation as any).endPortId);
+
+    const startPortName = startPort?.port_name || 'N/A';
+    const endPortName = endPort?.port_name || 'N/A';
+
+    // Prepare line items and totals
+    const lineItems = (quotation as any).lineItems || [];
+    const subtotal = lineItems.reduce((s: number, it: any) => s + (it.totalAmount ?? it.price * it.quantity), 0);
+    const currency = lineItems.length ? lineItems[0].currency : 'USD';
+
+    const templateData = {
+      quotationNumber: (quotation as any).quotationNumber,
+      customerName: (quotation as any).customerName,
+      customerEmail: (quotation as any).customerEmail,
+      validFrom: (quotation as any).validFrom,
+      validTo: (quotation as any).validTo,
+      containerType: (quotation as any).containerType,
+      containerSize: (quotation as any).containerSize,
+      tradeType: (quotation as any).tradeType,
+      startPortName,
+      endPortName,
+      lineItems: lineItems.map((it: any) => ({
+        chargeName: it.chargeName,
+        hsnCode: it.hsnCode,
+        price: it.price,
+        currency: it.currency,
+        quantity: it.quantity,
+        totalAmount: it.totalAmount ?? it.price * it.quantity,
+      })),
+      subtotal,
+      total: subtotal,
+      currency,
+    };
+
+    const html = renderTemplate('quotationEmail', templateData);
+
+    // Use mailer service to send email
+    const info = await mailer.sendMail({
+      to: vendorEmail,
+      subject: `Quotation ${templateData.quotationNumber}`,
+      html,
+    });
+
+    // Mark quotation as SENT when email is dispatched, but only if it's not already SENT
+    try {
+      if ((quotation as any).status !== QUOTATION_STATUS.SENT) {
+        await this.changeStatus(id, QUOTATION_STATUS.SENT);
+      }
+    } catch (err) {
+      console.warn('Could not change quotation status:', (err as Error).message);
+    }
+
+    return { info, vendorId, to: vendorEmail };
   }
 }
 

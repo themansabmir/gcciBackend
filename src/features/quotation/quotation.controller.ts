@@ -78,6 +78,19 @@ class QuotationController {
       next(error);
     }
   }
+
+  async sendQuotationToVendor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { vendorId } = req.body;
+      if (!vendorId) {
+        return res.status(400).json({ message: 'vendorId is required in body' });
+      }
+      const result = await quotationService.sendQuotationToVendor(req.params.id, vendorId);
+      res.status(200).json({ message: 'Email sent', result });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const quotationController = new QuotationController();
