@@ -1,4 +1,3 @@
-import { IQuery } from '@features/vendor/vendor.types';
 import { ShipmentCounterEntity } from './shipment.entity';
 import ShipmentRepository from './shipment.repository';
 import { IShipment, IShipmentQuery } from './shipment.types';
@@ -46,18 +45,60 @@ export default class ShipmentService {
 
   public async getAllShipments(query: IShipmentQuery) {
     try {
-      const { skip, sort, limit, filter } = this.shipmentRepository.buildSearchQuery({...query}, ['shipment_name', 'shipment_type']);
+      // Define searchable fields based on query parameter
+      const defaultSearchFields = ['shipment_name', 'shipment_type'];
+      const searchableFields = query.searchFields
+        ? query.searchFields.split(',').filter((f) => defaultSearchFields.includes(f.trim()))
+        : defaultSearchFields;
 
-      // Sanitize shipment_type using centralized enum validation
+      const { skip, sort, limit, filter } = this.shipmentRepository.buildSearchQuery({ ...query }, searchableFields);
+
+      // Add shipment_type filter if provided
       if (query.shipment_type) {
         const sanitizedType = validateEnum(query.shipment_type, ['IMP', 'EXP'] as const, 'shipment_type');
         filter['shipment_type'] = sanitizedType;
       }
-      
-      console.group('filter', filter, query)
-      const data = await this.shipmentRepository.find(filter).sort(sort).limit(limit).skip(skip);
+
+      // Add created_by filter if provided
+      if (query.createdBy) {
+        filter['created_by'] = query.createdBy;
+      }
+
+      // Add date range filter if provided
+      if (query.dateFrom || query.dateTo) {
+        filter['createdAt'] = {};
+        if (query.dateFrom) {
+          const fromDate = new Date(query.dateFrom);
+          if (!isNaN(fromDate.getTime())) {
+            filter['createdAt']['$gte'] = fromDate;
+          }
+        }
+        if (query.dateTo) {
+          const toDate = new Date(query.dateTo);
+          if (!isNaN(toDate.getTime())) {
+            // Add one day to include the entire end date
+            toDate.setDate(toDate.getDate() + 1);
+            filter['createdAt']['$lt'] = toDate;
+          }
+        }
+      }
+
+      // Execute query with population
+      const data = await this.shipmentRepository
+        .find(filter)
+        .populate({
+          path: 'created_by',
+          select: 'first_name last_name email',
+        })
+        .sort(sort)
+        .limit(limit)
+        .skip(skip);
+
       const total = await this.shipmentRepository.count(filter);
-      return { data, total };
+      const page = query.page || 1;
+      const totalPages = Math.ceil(total / limit);
+
+      return { data, total, page, limit, totalPages };
     } catch (error) {
       throw error;
     }
@@ -65,12 +106,11 @@ export default class ShipmentService {
 
   public async findById(id: string) {
     try {
-      return await this.shipmentRepository.findById(id).populate({path:'created_by', select: 'first_name last_name createdAt -_id'});
+      return await this.shipmentRepository.findById(id).populate({ path: 'created_by', select: 'first_name last_name createdAt -_id' });
     } catch (error) {
       throw error;
     }
   }
-
 
   /* 
   @param: id
@@ -79,9 +119,9 @@ export default class ShipmentService {
 
   public async findDocumentsByShipmentId(id: string) {
     try {
-     const mblDocument= await mblService.findByFolderId(id);
-     const hblDocument= await hblService.getAllHblByShipmentId(id);
-     const response = hblDocument?.length > 0 ? hblDocument : [mblDocument];
+      const mblDocument = await mblService.findByFolderId(id);
+      const hblDocument = await hblService.getAllHblByShipmentId(id);
+      const response = hblDocument?.length > 0 ? hblDocument : [mblDocument];
       return response;
     } catch (error) {
       throw error;
