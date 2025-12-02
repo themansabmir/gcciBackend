@@ -10,8 +10,8 @@ export enum ShipmentMode {
 }
 
 export enum MOVEMENT_TYPE {
-  RAIL= 'RAIL',
-  ROAD= 'ROAD',
+  RAIL = 'RAIL',
+  ROAD = 'ROAD',
 }
 export enum ShipmentType {
   FCL = 'FCL',
@@ -99,7 +99,7 @@ export interface IMbl extends Document {
 
   shipping_line: ObjectId;
   mbl_number: string;
-  mbl_date: String;
+  mbl_date: string;
 
   place_of_receipt: string;
   place_of_delivery: string;
@@ -109,10 +109,10 @@ export interface IMbl extends Document {
   transhipment_port: ObjectId;
   incoterm: INCOTERM;
   freight_type: FREIGHT_TYPE;
-  sob_date: String;
-  eta_pod: String;
+  sob_date: string;
+  eta_pod: string;
   shipping_bill_number: string;
-  shipping_bill_date: String;
+  shipping_bill_date: string;
 
   free_time_origin: string;
   free_time_destination: string;
@@ -126,6 +126,6 @@ export interface IMbl extends Document {
 
   created_by: ObjectId;
 
-  created_at: String;
-  updated_at: String;
+  created_at: string;
+  updated_at: string;
 }

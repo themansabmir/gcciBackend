@@ -1,8 +1,20 @@
 import { quotationRepository } from './quotation.repository';
-import { CreateQuotationDTO, QUOTATION_STATUS, QuotationFilters, UpdateQuotationDTO, CreateQuotationLineItemDTO, IQuotationLineItem } from './quotation.types';
+import {
+  CreateQuotationDTO,
+  QUOTATION_STATUS,
+  QuotationFilters,
+  UpdateQuotationDTO,
+  CreateQuotationLineItemDTO,
+  IQuotationLineItem,
+} from './quotation.types';
 import nodemailer from 'nodemailer';
 import { IQuery } from '../vendor/vendor.types';
 import { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } from '../../config/env';
+// Imported
+import { shipmentService } from '../shipment/shipment.controller';
+import { mblService } from '../mbl/mbl.controller';
+import { TradeType } from '../mbl/mbl.types';
+import { Types } from 'mongoose';
 
 class QuotationService {
   private generateQuotationNumber(): string {
@@ -33,8 +45,8 @@ class QuotationService {
   async deleteQuotation(id: string) {
     return quotationRepository.updateById(id, { status: QUOTATION_STATUS.DELETED });
   }
-
-  async changeStatus(id: string, status: QUOTATION_STATUS) {
+  // Changed
+  async changeStatus(id: string, status: QUOTATION_STATUS, userId?: string) {
     const quotation = await this.getQuotationById(id);
     if (!quotation) {
       throw new Error('Quotation not found');
@@ -52,8 +64,52 @@ class QuotationService {
     if (!allowedTransitions[quotation.status].includes(status)) {
       throw new Error(`Invalid status transition from ${quotation.status} to ${status}`);
     }
+    // updated
+
+    if (status === QUOTATION_STATUS.ACCEPTED && quotation.status !== QUOTATION_STATUS.ACCEPTED) {
+      await this.generateMblFromQuotation(quotation, userId);
+    }
 
     return quotationRepository.updateById(id, { status });
+  }
+  // Updated
+
+  private async generateMblFromQuotation(quotation: any, userId?: string) {
+    try {
+      const tradeTypeStr = quotation.tradeType?.toLowerCase();
+      let shipmentType: 'IMP' | 'EXP';
+      let mblTradeType: TradeType;
+
+      if (tradeTypeStr === 'import') {
+        shipmentType = 'IMP';
+        mblTradeType = TradeType.IMPORT;
+      } else if (tradeTypeStr === 'export') {
+        shipmentType = 'EXP';
+        mblTradeType = TradeType.EXPORT;
+      } else {
+        shipmentType = 'IMP';
+        mblTradeType = TradeType.IMPORT;
+      }
+
+      const shipment = await shipmentService.createShipment({
+        shipment_type: shipmentType,
+        created_by: userId,
+      } as any);
+
+      await mblService.create({
+        shipment_folder_id: shipment._id,
+        created_by: userId,
+        shipping_line: quotation.shippingLineId,
+        port_of_loading: quotation.startPortId,
+        port_of_discharge: quotation.endPortId,
+        trade_type: mblTradeType,
+        container_size: quotation.containerSize,
+        container_type: quotation.containerType,
+      } as any);
+    } catch (error) {
+      console.error('Error generating MBL from quotation:', error);
+      throw error;
+    }
   }
 
   async duplicateQuotation(id: string) {
