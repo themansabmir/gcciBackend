@@ -1,10 +1,9 @@
-import {defaultRouter} from '@lib/router';
+import { defaultRouter } from '@lib/router';
 import { validateDTO } from '@middleware/validateDTO';
 import { vendorController } from './vendor.controller';
 import { createVendorDTO } from './vendor.dto';
-import { uploadExcel } from '@middleware/upload';
 
-const vendorRouter= defaultRouter()
+const vendorRouter = defaultRouter();
 
 vendorRouter.post('/', validateDTO(createVendorDTO), vendorController.createVendor);
 vendorRouter.put('/:id', vendorController.updateVendor);
