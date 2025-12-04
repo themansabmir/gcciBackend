@@ -46,15 +46,15 @@ export default class ShipmentService {
 
   public async getAllShipments(query: IShipmentQuery) {
     try {
-      const { skip, sort, limit, filter } = this.shipmentRepository.buildSearchQuery({...query}, ['shipment_name', 'shipment_type']);
+      const { skip, sort, limit, filter } = this.shipmentRepository.buildSearchQuery({ ...query }, ['shipment_name', 'shipment_type']);
 
       // Sanitize shipment_type using centralized enum validation
       if (query.shipment_type) {
         const sanitizedType = validateEnum(query.shipment_type, ['IMP', 'EXP'] as const, 'shipment_type');
         filter['shipment_type'] = sanitizedType;
       }
-      
-      console.group('filter', filter, query)
+
+      console.group('filter', filter, query);
       const data = await this.shipmentRepository.find(filter).sort(sort).limit(limit).skip(skip);
       const total = await this.shipmentRepository.count(filter);
       return { data, total };
@@ -65,12 +65,11 @@ export default class ShipmentService {
 
   public async findById(id: string) {
     try {
-      return await this.shipmentRepository.findById(id).populate({path:'created_by', select: 'first_name last_name createdAt -_id'});
+      return await this.shipmentRepository.findById(id).populate({ path: 'created_by', select: 'first_name last_name createdAt -_id' });
     } catch (error) {
       throw error;
     }
   }
-
 
   /* 
   @param: id
@@ -79,9 +78,9 @@ export default class ShipmentService {
 
   public async findDocumentsByShipmentId(id: string) {
     try {
-     const mblDocument= await mblService.findByFolderId(id);
-     const hblDocument= await hblService.getAllHblByShipmentId(id);
-     const response = hblDocument?.length > 0 ? hblDocument : [mblDocument];
+      const mblDocument = await mblService.findByFolderId(id);
+      const hblDocument = await hblService.getAllHblByShipmentId(id);
+      const response = hblDocument?.length > 0 ? hblDocument : [mblDocument];
       return response;
     } catch (error) {
       throw error;

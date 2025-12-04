@@ -20,5 +20,11 @@ export const EMAIL_PORT = process.env.EMAIL_PORT ? parseInt(process.env.EMAIL_PO
 export const EMAIL_USER = process.env.EMAIL_USER ?? 'test@ethereal.email';
 export const EMAIL_PASS = process.env.EMAIL_PASS ?? 'password';
 
+// storage
+export const STORAGE_PROVIDER = (process.env.STORAGE_PROVIDER ?? 'cloudinary') as 'cloudinary' | 'aws-s3' | 'gcp';
+export const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME ?? '';
+export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY ?? '';
+export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET ?? '';
+
 // env
 export const ENV = env;
