@@ -1,13 +1,6 @@
-import { Document, } from "mongoose";
+import { Document } from 'mongoose';
 
-export const VendorTypeEnum = [
-  "cha",
-  "agent",
-  "shipper",
-  "consignee",
-  "shipping_line",
-  "freight_forwarder",
-] as const;
+export const VendorTypeEnum = ['cha', 'agent', 'shipper', 'consignee', 'shipping_line', 'freight_forwarder'] as const;
 interface ILocation {
   city: string;
   address: string;
@@ -19,6 +12,7 @@ interface ILocation {
   fax: string;
   gst_number: string;
   pan_number: string;
+  email?: string;
 }
 
 export interface IVendor extends Document {
@@ -30,8 +24,7 @@ export interface IVendor extends Document {
   locations: ILocation[];
 }
 
-
-export interface IQuery  {
+export interface IQuery {
   page: number;
   limit: number;
   sortBy?: string;

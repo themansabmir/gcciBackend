@@ -25,6 +25,7 @@ import excelRouter from '@features/excel/excel.route';
 import rateSheetMasterRouter from '@features/ratemaster/ratemaster.route';
 import customerRouter from '@features/customer/customer.route';
 import quotationRouter from '@features/quotation/quotation.route';
+import fileRouter from '@features/file/file.route';
 dotenv.config();
 
 const app = express();
@@ -33,7 +34,7 @@ app.use(cors());
 app.use(express.json());
 
 // Global Rate Limiter - Apply to all requests
-app.use(generalLimiter);
+// app.use(generalLimiter);
 
 // Global API Logger Middleware
 // app.use(apiLogger);
@@ -43,7 +44,7 @@ app.get('/', (req, res) => {
 });
 // APP ROUTES
 // Auth routes with strict rate limiting to prevent brute force
-app.use('/api', authLimiter, authRouter);
+app.use('/api', authRouter);
 app.use('/api/shipment', validateToken, shipmentRouter);
 app.use('/api/team', validateToken, teamRouter);
 app.use('/api/vendor', vendorRouter);
@@ -56,7 +57,8 @@ app.use('/api/finance', financeRouter);
 app.use('/api/excel', excelRouter);
 app.use('/api/rate-sheet', rateSheetMasterRouter);
 app.use('/api/customer', customerRouter);
-app.use('/api/quotation', validateToken, quotationRouter);
+app.use('/api/quotation', quotationRouter);
+app.use('/api/file', validateToken, fileRouter);
 
 // GLOBAL ERROR HANDLER
 app.use(errorHandler);

@@ -1,7 +1,6 @@
 import { BaseRepository } from '../base.repository';
 import { QuotationTable, QuotationLineItemTable } from './quotation.entity';
 import { IQuotation, CreateQuotationDTO, UpdateQuotationDTO, QuotationFilters } from './quotation.types';
-import mongoose from 'mongoose';
 import { IQuery } from '../vendor/vendor.types';
 
 class QuotationRepository extends BaseRepository<IQuotation> {
@@ -10,54 +9,42 @@ class QuotationRepository extends BaseRepository<IQuotation> {
   }
 
   async createWithTransaction(data: CreateQuotationDTO): Promise<IQuotation> {
-    const session = await mongoose.startSession();
-    session.startTransaction();
     try {
       const { lineItems, ...quotationData } = data;
       const quotation = new QuotationTable(quotationData);
-      await quotation.save({ session });
+      await quotation.save();
 
       const quotationLineItems = lineItems.map((item) => ({
         ...item,
         quotationId: quotation._id,
         totalAmount: item.price * item.quantity,
       }));
-      await QuotationLineItemTable.insertMany(quotationLineItems, { session });
+      await QuotationLineItemTable.insertMany(quotationLineItems);
 
-      await session.commitTransaction();
       return quotation;
     } catch (error) {
-      await session.abortTransaction();
       throw error;
-    } finally {
-      session.endSession();
     }
   }
 
   async updateWithTransaction(id: string, data: UpdateQuotationDTO): Promise<IQuotation | null> {
-    const session = await mongoose.startSession();
-    session.startTransaction();
     try {
       const { lineItems, ...quotationData } = data;
-      const quotation = await this.updateById(id, quotationData, { session });
+      const quotation = await this.updateById(id, quotationData);
 
       if (lineItems) {
-        await QuotationLineItemTable.deleteMany({ quotationId: id }, { session });
+        await QuotationLineItemTable.deleteMany({ quotationId: id });
         const quotationLineItems = lineItems.map((item) => ({
           ...item,
           quotationId: id,
           totalAmount: item.price * item.quantity,
         }));
-        await QuotationLineItemTable.insertMany(quotationLineItems, { session });
+        await QuotationLineItemTable.insertMany(quotationLineItems);
       }
 
-      await session.commitTransaction();
       return quotation;
     } catch (error) {
-      await session.abortTransaction();
       throw error;
-    } finally {
-      session.endSession();
     }
   }
 

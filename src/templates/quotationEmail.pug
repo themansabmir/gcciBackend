@@ -1,0 +1,72 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Quotation - GCCI
+    style.
+      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; padding:0; background:#f4f6f8 }
+      .container { max-width:800px; margin:24px auto; background:#fff; padding:24px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.05) }
+      .header { display:flex; justify-content:space-between; align-items:center }
+      h1 { margin:0; font-size:20px }
+      .meta { color:#666; font-size:13px }
+      table { width:100%; border-collapse:collapse; margin-top:16px }
+      th, td { padding:10px; border:1px solid #e9eef2; text-align:left }
+      th { background:#fafbfd; color:#333 }
+      .right { text-align:right }
+      .total-row td { font-weight:700; }
+      .footer { margin-top:18px; color:#777; font-size:13px }
+  body
+    .container
+      .header
+        h1 Quotation #{quotationNumber}
+        .meta
+          p Valid: #{new Date(validFrom).toLocaleDateString()} - #{new Date(validTo).toLocaleDateString()}
+          p Trade: #{tradeType}
+      .buyer
+        p
+          strong Customer:
+          |  #{customerName} (#{customerEmail})
+        p
+          strong Container:
+          |  #{containerType} / #{containerSize}
+
+        p
+          strong Route:
+          |  #{startPortName} → #{endPortName}
+          
+      hr
+      if lineItems && lineItems.length
+        table
+          thead
+            tr
+              th #
+              th Charge
+              th HSN
+              th Price
+              th Quantity
+              th Total
+          tbody
+            each item, idx in lineItems
+              tr
+                td #{idx + 1}
+                td #{item.chargeName}
+                td #{item.hsnCode}
+                td #{item.currency} #{item.price}
+                td #{item.quantity}
+                td #{item.currency} #{item.totalAmount}
+          tfoot
+            tr.total-row
+              td(colspan="5") Subtotal
+              td #{currency} #{subtotal}
+            //- You can add tax/shipping rows here
+            tr.total-row
+              td(colspan="5") Total
+              td #{currency} #{total}
+      else
+        p No line items available for this quotation.
+      .footer
+        p This is an automated email from GCCI. For any questions contact support@gcci.com
+        p
+          small Quotation ID: #{quotationNumber}
+    
