@@ -93,6 +93,22 @@ class QuotationController {
     }
   }
 
+  async filterQuotations(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { page, limit, sortBy, sortOrder, ...filterParams } = req.query as any;
+
+      // Extract pagination/sorting params
+      const query = { page, limit, sortBy, sortOrder };
+
+      // All other query params are filter params
+      const quotations = await quotationService.filterQuotations(query, filterParams);
+
+      res.status(200).json(quotations);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async downloadQuotationPDF(req: Request, res: Response, next: NextFunction) {
     try {
       const pdfBuffer = await quotationService.generateQuotationPDF(req.params.id);

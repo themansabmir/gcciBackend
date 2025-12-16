@@ -6,6 +6,7 @@ import {
   UpdateQuotationDTO,
   CreateQuotationLineItemDTO,
   IQuotationLineItem,
+  QuotationFilterDTO,
 } from './quotation.types';
 import { IQuery } from '../vendor/vendor.types';
 import { renderTemplate } from '../../lib/pugRenderer';
@@ -17,8 +18,14 @@ import PortModel from '../port/port.entity';
 import nodemailer from 'nodemailer';
 import { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } from '../../config/env';
 import puppeteer from 'puppeteer';
+import { VendorService } from '@features/vendor/vendor.service';
+import { vendorService } from '@features/vendor/vendor.controller';
 
 class QuotationService {
+  private vendorService: VendorService;
+  constructor(vendorService: VendorService) {
+    this.vendorService = vendorService;
+  }
   private generateQuotationNumber(): string {
     const prefix = 'QUOT';
     const timestamp = Date.now();
@@ -27,8 +34,14 @@ class QuotationService {
 
   async createQuotation(dto: CreateQuotationDTO) {
     const quotationNumber = this.generateQuotationNumber();
+    const vendor = await this.vendorService.findVendorById(dto.customerId as string);
+    if (!vendor) {
+      throw new Error('Vendor not found');
+    }
     dto.quotationNumber = quotationNumber;
     dto.status = QUOTATION_STATUS.DRAFT;
+    dto.customerName = vendor?.vendor_name ?? '';
+    dto.customerEmail = vendor?.primary_email ?? 'dummy@dummy.com';
     return quotationRepository.createWithTransaction(dto);
   }
 
@@ -37,7 +50,105 @@ class QuotationService {
   }
 
   async getAllQuotations(query: IQuery, filters: QuotationFilters) {
-    return quotationRepository.findAll(query, { ...filters, status: { $ne: QUOTATION_STATUS.DELETED } });
+    return quotationRepository
+      .findAll(query, { ...filters, status: { $ne: QUOTATION_STATUS.DELETED } })
+      .populate('startPortId', 'port_name')
+      .populate('endPortId', 'port_name')
+      .populate('customerId', 'vendor_name')
+      .populate('shippingLineId');
+  }
+
+  async filterQuotations(query: IQuery, filterDTO: QuotationFilterDTO) {
+    // Build filters from DTO
+    const filters: QuotationFilters = {};
+
+    // String fields - exact match or regex for partial search
+    if (filterDTO.quotationNumber) {
+      filters.quotationNumber = { $regex: filterDTO.quotationNumber, $options: 'i' };
+    }
+    if (filterDTO.customerName) {
+      filters.customerName = { $regex: filterDTO.customerName, $options: 'i' };
+    }
+    if (filterDTO.customerEmail) {
+      filters.customerEmail = { $regex: filterDTO.customerEmail, $options: 'i' };
+    }
+
+    // ObjectId fields - exact match
+    if (filterDTO.customerId) {
+      filters.customerId = filterDTO.customerId;
+    }
+    if (filterDTO.shippingLineId) {
+      filters.shippingLineId = filterDTO.shippingLineId;
+    }
+    if (filterDTO.startPortId) {
+      filters.startPortId = filterDTO.startPortId;
+    }
+    if (filterDTO.endPortId) {
+      filters.endPortId = filterDTO.endPortId;
+    }
+
+    // Enum/String fields - exact match
+    if (filterDTO.containerType) {
+      filters.containerType = filterDTO.containerType;
+    }
+    if (filterDTO.containerSize) {
+      filters.containerSize = filterDTO.containerSize;
+    }
+    if (filterDTO.tradeType) {
+      filters.tradeType = filterDTO.tradeType;
+    }
+    if (filterDTO.status) {
+      filters.status = filterDTO.status as QUOTATION_STATUS;
+    }
+
+    // Date range filters - validFrom
+    if (filterDTO.validFromStart || filterDTO.validFromEnd) {
+      filters.validFrom = {};
+      if (filterDTO.validFromStart) {
+        filters.validFrom.$gte = new Date(filterDTO.validFromStart);
+      }
+      if (filterDTO.validFromEnd) {
+        filters.validFrom.$lte = new Date(filterDTO.validFromEnd);
+      }
+    }
+
+    // Date range filters - validTo
+    if (filterDTO.validToStart || filterDTO.validToEnd) {
+      filters.validTo = {};
+      if (filterDTO.validToStart) {
+        filters.validTo.$gte = new Date(filterDTO.validToStart);
+      }
+      if (filterDTO.validToEnd) {
+        filters.validTo.$lte = new Date(filterDTO.validToEnd);
+      }
+    }
+
+    // Date range filters - createdAt
+    if (filterDTO.createdAtStart || filterDTO.createdAtEnd) {
+      filters.createdAt = {};
+      if (filterDTO.createdAtStart) {
+        filters.createdAt.$gte = new Date(filterDTO.createdAtStart);
+      }
+      if (filterDTO.createdAtEnd) {
+        filters.createdAt.$lte = new Date(filterDTO.createdAtEnd);
+      }
+    }
+
+    // Date range filters - updatedAt
+    if (filterDTO.updatedAtStart || filterDTO.updatedAtEnd) {
+      filters.updatedAt = {};
+      if (filterDTO.updatedAtStart) {
+        filters.updatedAt.$gte = new Date(filterDTO.updatedAtStart);
+      }
+      if (filterDTO.updatedAtEnd) {
+        filters.updatedAt.$lte = new Date(filterDTO.updatedAtEnd);
+      }
+    }
+
+    // Always exclude deleted quotations
+    filters.status = filters.status || { $ne: QUOTATION_STATUS.DELETED };
+
+    return quotationRepository.findAll(query, filters);
   }
 
   async updateQuotation(id: string, dto: UpdateQuotationDTO) {
@@ -239,4 +350,4 @@ class QuotationService {
   }
 }
 
-export const quotationService = new QuotationService();
+export const quotationService = new QuotationService(vendorService);
