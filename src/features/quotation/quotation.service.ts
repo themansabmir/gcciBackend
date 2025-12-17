@@ -50,8 +50,45 @@ class QuotationService {
   }
 
   async getAllQuotations(query: IQuery, filters: QuotationFilters) {
+    const processedFilters: QuotationFilters = { ...filters };
+
+    if (typeof filters?.status === 'string') {
+      const statusArr = filters.status.split(',').filter(Boolean);
+      if (statusArr.length > 0) {
+        processedFilters.status = { $in: statusArr as QUOTATION_STATUS[] };
+      }
+    }
+
+    if (typeof filters?.customerId === 'string') {
+      const customerIdArr = filters.customerId.split(',').filter(Boolean);
+      if (customerIdArr.length > 0) {
+        processedFilters.customerId = { $in: customerIdArr } as any;
+      }
+    }
+
+    if (typeof filters?.shippingLineId === 'string') {
+      const shippingLineIdArr = filters.shippingLineId.split(',').filter(Boolean);
+      if (shippingLineIdArr.length > 0) {
+        processedFilters.shippingLineId = { $in: shippingLineIdArr } as any;
+      }
+    }
+
+    if (typeof filters?.startPortId === 'string') {
+      const startPortIdArr = filters.startPortId.split(',').filter(Boolean);
+      if (startPortIdArr.length > 0) {
+        processedFilters.startPortId = { $in: startPortIdArr } as any;
+      }
+    }
+
+    if (typeof filters?.endPortId === 'string') {
+      const endPortIdArr = filters.endPortId.split(',').filter(Boolean);
+      if (endPortIdArr.length > 0) {
+        processedFilters.endPortId = { $in: endPortIdArr } as any;
+      }
+    }
+
     return quotationRepository
-      .findAll(query, { ...filters, status: { $ne: QUOTATION_STATUS.DELETED } })
+      .findAll(query, processedFilters)
       .populate('startPortId', 'port_name')
       .populate('endPortId', 'port_name')
       .populate('customerId', 'vendor_name')
@@ -178,7 +215,7 @@ class QuotationService {
       throw new Error(`Invalid status transition from ${quotation.status} to ${status}`);
     }
 
-    return quotationRepository.updateById(id, { status });
+    return await quotationRepository.updateById(id, { status });
   }
 
   async duplicateQuotation(id: string) {
@@ -250,22 +287,22 @@ class QuotationService {
    * Accepts vendorId, fetches vendor details including email from locations,
    * and port names from port entities.
    */
-  async sendQuotationToVendor(id: string, vendorId: string) {
+  async sendQuotationToVendor(id: string) {
     const quotation = await this.getQuotationById(id);
+
     if (!quotation) {
       throw new Error('Quotation not found');
     }
 
     // Fetch vendor to get email from first location
     const vendorRepository = new VendorRepository(VendorEntity);
-    const vendor = await vendorRepository.findById(vendorId);
+    const vendor = await vendorRepository.findById(quotation.customerId.toString());
     if (!vendor) {
       throw new Error('Vendor not found');
     }
 
     // Resolve a valid vendor email address. Prefer explicit email fields if present.
-    const locationEmail = vendor.locations?.find((l: any) => l.email)?.email;
-    const vendorEmail = (vendor as any).email || (vendor as any).contact_email || locationEmail;
+    const vendorEmail = vendor.primary_email;
     if (!vendorEmail) {
       // Provide a clearer error so caller can fix vendor data instead of getting mailer "No recipients defined"
       throw new Error('Vendor does not have an email address. Add an `email` field to vendor or one of its locations before sending.');
@@ -325,7 +362,7 @@ class QuotationService {
       console.warn('Could not change quotation status:', (err as Error).message);
     }
 
-    return { info, vendorId, to: vendorEmail };
+    return { info, to: vendorEmail };
   }
 
   async generateQuotationPDF(id: string): Promise<Buffer> {
@@ -347,6 +384,86 @@ class QuotationService {
     await browser.close();
 
     return Buffer.from(pdfBuffer);
+  }
+
+  async getFilterOptions() {
+    const pipeline = [
+      {
+        $facet: {
+          statuses: [{ $group: { _id: '$status' } }, { $match: { _id: { $ne: null } } }, { $project: { _id: 0, value: '$_id', label: '$_id' } }],
+          customers: [
+            { $group: { _id: '$customerId' } },
+            { $match: { _id: { $ne: null } } },
+            {
+              $lookup: {
+                from: 'vendors',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'vendor',
+              },
+            },
+            { $unwind: '$vendor' },
+            { $project: { _id: 0, value: { $toString: '$_id' }, label: '$vendor.vendor_name' } },
+          ],
+          shippingLines: [
+            { $group: { _id: '$shippingLineId' } },
+            { $match: { _id: { $ne: null } } },
+            {
+              $lookup: {
+                from: 'vendors',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'vendor',
+              },
+            },
+            { $unwind: '$vendor' },
+            { $project: { _id: 0, value: { $toString: '$_id' }, label: '$vendor.vendor_name' } },
+          ],
+          startPorts: [
+            { $group: { _id: '$startPortId' } },
+            { $match: { _id: { $ne: null } } },
+            {
+              $lookup: {
+                from: 'ports',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'port',
+              },
+            },
+            { $unwind: '$port' },
+            { $project: { _id: 0, value: { $toString: '$_id' }, label: '$port.port_name' } },
+          ],
+          endPorts: [
+            { $group: { _id: '$endPortId' } },
+            { $match: { _id: { $ne: null } } },
+            {
+              $lookup: {
+                from: 'ports',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'port',
+              },
+            },
+            { $unwind: '$port' },
+            { $project: { _id: 0, value: { $toString: '$_id' }, label: '$port.port_name' } },
+          ],
+        },
+      },
+    ];
+
+    const result = await quotationRepository.aggregate(pipeline);
+
+    if (!result || result.length === 0) {
+      return {
+        statuses: [],
+        customers: [],
+        shippingLines: [],
+        startPorts: [],
+        endPorts: [],
+      };
+    }
+
+    return result[0];
   }
 }
 

@@ -82,11 +82,7 @@ class QuotationController {
 
   async sendQuotationToVendor(req: Request, res: Response, next: NextFunction) {
     try {
-      const { vendorId } = req.body;
-      if (!vendorId) {
-        res.status(400).json({ message: 'vendorId is required in body' });
-      }
-      const result = await quotationService.sendQuotationToVendor(req.params.id, vendorId);
+      const result = await quotationService.sendQuotationToVendor(req.params.id);
       res.status(200).json({ message: 'Email sent', result });
     } catch (error) {
       next(error);
@@ -120,6 +116,15 @@ class QuotationController {
       });
 
       res.send(pdfBuffer);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getFilterOptions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const filterOptions = await quotationService.getFilterOptions();
+      res.status(200).json(filterOptions);
     } catch (error) {
       next(error);
     }
