@@ -29,7 +29,7 @@ const QuotationEntity = new Schema<IQuotation>(
     },
     customerId: {
       type: Schema.Types.ObjectId,
-      ref: 'Customer',
+      ref: 'Vendor',
       required: true,
       index: true,
     },
@@ -68,9 +68,6 @@ QuotationEntity.virtual('lineItems', {
 });
 
 const QuotationTable = mongoose.model<IQuotation>('Quotation', QuotationEntity);
-const QuotationLineItemTable = mongoose.model<IQuotationLineItem>(
-  'QuotationLineItem',
-  QuotationLineItemEntity
-);
+const QuotationLineItemTable = mongoose.model<IQuotationLineItem>('QuotationLineItem', QuotationLineItemEntity);
 
 export { QuotationTable, QuotationLineItemTable };

@@ -65,6 +65,10 @@ class QuotationRepository extends BaseRepository<IQuotation> {
   findByCustomerId(customerId: string) {
     return this.find({ customerId }).populate('lineItems');
   }
+
+  async aggregate(pipeline: any[]) {
+    return this.model.aggregate(pipeline);
+  }
 }
 
 export const quotationRepository = new QuotationRepository();

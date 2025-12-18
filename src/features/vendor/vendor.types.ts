@@ -21,6 +21,8 @@ export interface IVendor extends Document {
   credit_days: string;
   pan_number: string;
   is_active: boolean;
+  primary_email: string;
+  primary_mobile_number: string;
   locations: ILocation[];
 }
 

@@ -6,6 +6,7 @@ import {
   UpdateQuotationDTO,
   CreateQuotationLineItemDTO,
   IQuotationLineItem,
+  QuotationFilterDTO,
 } from './quotation.types';
 import { IQuery } from '../vendor/vendor.types';
 import { renderTemplate } from '../../lib/pugRenderer';
@@ -17,8 +18,14 @@ import PortModel from '../port/port.entity';
 import nodemailer from 'nodemailer';
 import { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } from '../../config/env';
 import puppeteer from 'puppeteer';
+import { VendorService } from '@features/vendor/vendor.service';
+import { vendorService } from '@features/vendor/vendor.controller';
 
 class QuotationService {
+  private vendorService: VendorService;
+  constructor(vendorService: VendorService) {
+    this.vendorService = vendorService;
+  }
   private generateQuotationNumber(): string {
     const prefix = 'QUOT';
     const timestamp = Date.now();
@@ -27,8 +34,14 @@ class QuotationService {
 
   async createQuotation(dto: CreateQuotationDTO) {
     const quotationNumber = this.generateQuotationNumber();
+    const vendor = await this.vendorService.findVendorById(dto.customerId as string);
+    if (!vendor) {
+      throw new Error('Vendor not found');
+    }
     dto.quotationNumber = quotationNumber;
     dto.status = QUOTATION_STATUS.DRAFT;
+    dto.customerName = vendor?.vendor_name ?? '';
+    dto.customerEmail = vendor?.primary_email ?? 'dummy@dummy.com';
     return quotationRepository.createWithTransaction(dto);
   }
 
@@ -37,7 +50,142 @@ class QuotationService {
   }
 
   async getAllQuotations(query: IQuery, filters: QuotationFilters) {
-    return quotationRepository.findAll(query, { ...filters, status: { $ne: QUOTATION_STATUS.DELETED } });
+    const processedFilters: QuotationFilters = { ...filters };
+
+    if (typeof filters?.status === 'string') {
+      const statusArr = filters.status.split(',').filter(Boolean);
+      if (statusArr.length > 0) {
+        processedFilters.status = { $in: statusArr as QUOTATION_STATUS[] };
+      }
+    }
+
+    if (typeof filters?.customerId === 'string') {
+      const customerIdArr = filters.customerId.split(',').filter(Boolean);
+      if (customerIdArr.length > 0) {
+        processedFilters.customerId = { $in: customerIdArr } as any;
+      }
+    }
+
+    if (typeof filters?.shippingLineId === 'string') {
+      const shippingLineIdArr = filters.shippingLineId.split(',').filter(Boolean);
+      if (shippingLineIdArr.length > 0) {
+        processedFilters.shippingLineId = { $in: shippingLineIdArr } as any;
+      }
+    }
+
+    if (typeof filters?.startPortId === 'string') {
+      const startPortIdArr = filters.startPortId.split(',').filter(Boolean);
+      if (startPortIdArr.length > 0) {
+        processedFilters.startPortId = { $in: startPortIdArr } as any;
+      }
+    }
+
+    if (typeof filters?.endPortId === 'string') {
+      const endPortIdArr = filters.endPortId.split(',').filter(Boolean);
+      if (endPortIdArr.length > 0) {
+        processedFilters.endPortId = { $in: endPortIdArr } as any;
+      }
+    }
+
+    return quotationRepository
+      .findAll(query, processedFilters)
+      .populate('startPortId', 'port_name')
+      .populate('endPortId', 'port_name')
+      .populate('customerId', 'vendor_name')
+      .populate('shippingLineId');
+  }
+
+  async filterQuotations(query: IQuery, filterDTO: QuotationFilterDTO) {
+    // Build filters from DTO
+    const filters: QuotationFilters = {};
+
+    // String fields - exact match or regex for partial search
+    if (filterDTO.quotationNumber) {
+      filters.quotationNumber = { $regex: filterDTO.quotationNumber, $options: 'i' };
+    }
+    if (filterDTO.customerName) {
+      filters.customerName = { $regex: filterDTO.customerName, $options: 'i' };
+    }
+    if (filterDTO.customerEmail) {
+      filters.customerEmail = { $regex: filterDTO.customerEmail, $options: 'i' };
+    }
+
+    // ObjectId fields - exact match
+    if (filterDTO.customerId) {
+      filters.customerId = filterDTO.customerId;
+    }
+    if (filterDTO.shippingLineId) {
+      filters.shippingLineId = filterDTO.shippingLineId;
+    }
+    if (filterDTO.startPortId) {
+      filters.startPortId = filterDTO.startPortId;
+    }
+    if (filterDTO.endPortId) {
+      filters.endPortId = filterDTO.endPortId;
+    }
+
+    // Enum/String fields - exact match
+    if (filterDTO.containerType) {
+      filters.containerType = filterDTO.containerType;
+    }
+    if (filterDTO.containerSize) {
+      filters.containerSize = filterDTO.containerSize;
+    }
+    if (filterDTO.tradeType) {
+      filters.tradeType = filterDTO.tradeType;
+    }
+    if (filterDTO.status) {
+      filters.status = filterDTO.status as QUOTATION_STATUS;
+    }
+
+    // Date range filters - validFrom
+    if (filterDTO.validFromStart || filterDTO.validFromEnd) {
+      filters.validFrom = {};
+      if (filterDTO.validFromStart) {
+        filters.validFrom.$gte = new Date(filterDTO.validFromStart);
+      }
+      if (filterDTO.validFromEnd) {
+        filters.validFrom.$lte = new Date(filterDTO.validFromEnd);
+      }
+    }
+
+    // Date range filters - validTo
+    if (filterDTO.validToStart || filterDTO.validToEnd) {
+      filters.validTo = {};
+      if (filterDTO.validToStart) {
+        filters.validTo.$gte = new Date(filterDTO.validToStart);
+      }
+      if (filterDTO.validToEnd) {
+        filters.validTo.$lte = new Date(filterDTO.validToEnd);
+      }
+    }
+
+    // Date range filters - createdAt
+    if (filterDTO.createdAtStart || filterDTO.createdAtEnd) {
+      filters.createdAt = {};
+      if (filterDTO.createdAtStart) {
+        filters.createdAt.$gte = new Date(filterDTO.createdAtStart);
+      }
+      if (filterDTO.createdAtEnd) {
+        filters.createdAt.$lte = new Date(filterDTO.createdAtEnd);
+      }
+    }
+
+    // Date range filters - updatedAt
+    if (filterDTO.updatedAtStart || filterDTO.updatedAtEnd) {
+      filters.updatedAt = {};
+      if (filterDTO.updatedAtStart) {
+        filters.updatedAt.$gte = new Date(filterDTO.updatedAtStart);
+      }
+      if (filterDTO.updatedAtEnd) {
+        filters.updatedAt.$lte = new Date(filterDTO.updatedAtEnd);
+      }
+    }
+
+    // Always exclude deleted quotations
+    filters.status = filters.status || { $ne: QUOTATION_STATUS.DELETED };
+
+    return quotationRepository.findAll(query, filters);
   }
 
   async updateQuotation(id: string, dto: UpdateQuotationDTO) {
@@ -67,7 +215,7 @@ class QuotationService {
       throw new Error(`Invalid status transition from ${quotation.status} to ${status}`);
     }
 
-    return quotationRepository.updateById(id, { status });
+    return await quotationRepository.updateById(id, { status });
   }
 
   async duplicateQuotation(id: string) {
@@ -139,22 +287,22 @@ class QuotationService {
    * Accepts vendorId, fetches vendor details including email from locations,
    * and port names from port entities.
    */
-  async sendQuotationToVendor(id: string, vendorId: string) {
+  async sendQuotationToVendor(id: string) {
     const quotation = await this.getQuotationById(id);
+
     if (!quotation) {
       throw new Error('Quotation not found');
     }
 
     // Fetch vendor to get email from first location
     const vendorRepository = new VendorRepository(VendorEntity);
-    const vendor = await vendorRepository.findById(vendorId);
+    const vendor = await vendorRepository.findById(quotation.customerId.toString());
     if (!vendor) {
       throw new Error('Vendor not found');
     }
 
     // Resolve a valid vendor email address. Prefer explicit email fields if present.
-    const locationEmail = vendor.locations?.find((l: any) => l.email)?.email;
-    const vendorEmail = (vendor as any).email || (vendor as any).contact_email || locationEmail;
+    const vendorEmail = vendor.primary_email;
     if (!vendorEmail) {
       // Provide a clearer error so caller can fix vendor data instead of getting mailer "No recipients defined"
       throw new Error('Vendor does not have an email address. Add an `email` field to vendor or one of its locations before sending.');
@@ -214,7 +362,7 @@ class QuotationService {
       console.warn('Could not change quotation status:', (err as Error).message);
     }
 
-    return { info, vendorId, to: vendorEmail };
+    return { info, to: vendorEmail };
   }
 
   async generateQuotationPDF(id: string): Promise<Buffer> {
@@ -237,6 +385,86 @@ class QuotationService {
 
     return Buffer.from(pdfBuffer);
   }
+
+  async getFilterOptions() {
+    const pipeline = [
+      {
+        $facet: {
+          statuses: [{ $group: { _id: '$status' } }, { $match: { _id: { $ne: null } } }, { $project: { _id: 0, value: '$_id', label: '$_id' } }],
+          customers: [
+            { $group: { _id: '$customerId' } },
+            { $match: { _id: { $ne: null } } },
+            {
+              $lookup: {
+                from: 'vendors',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'vendor',
+              },
+            },
+            { $unwind: '$vendor' },
+            { $project: { _id: 0, value: { $toString: '$_id' }, label: '$vendor.vendor_name' } },
+          ],
+          shippingLines: [
+            { $group: { _id: '$shippingLineId' } },
+            { $match: { _id: { $ne: null } } },
+            {
+              $lookup: {
+                from: 'vendors',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'vendor',
+              },
+            },
+            { $unwind: '$vendor' },
+            { $project: { _id: 0, value: { $toString: '$_id' }, label: '$vendor.vendor_name' } },
+          ],
+          startPorts: [
+            { $group: { _id: '$startPortId' } },
+            { $match: { _id: { $ne: null } } },
+            {
+              $lookup: {
+                from: 'ports',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'port',
+              },
+            },
+            { $unwind: '$port' },
+            { $project: { _id: 0, value: { $toString: '$_id' }, label: '$port.port_name' } },
+          ],
+          endPorts: [
+            { $group: { _id: '$endPortId' } },
+            { $match: { _id: { $ne: null } } },
+            {
+              $lookup: {
+                from: 'ports',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'port',
+              },
+            },
+            { $unwind: '$port' },
+            { $project: { _id: 0, value: { $toString: '$_id' }, label: '$port.port_name' } },
+          ],
+        },
+      },
+    ];
+
+    const result = await quotationRepository.aggregate(pipeline);
+
+    if (!result || result.length === 0) {
+      return {
+        statuses: [],
+        customers: [],
+        shippingLines: [],
+        startPorts: [],
+        endPorts: [],
+      };
+    }
+
+    return result[0];
+  }
 }
 
-export const quotationService = new QuotationService();
+export const quotationService = new QuotationService(vendorService);
