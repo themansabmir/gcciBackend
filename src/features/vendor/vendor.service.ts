@@ -23,7 +23,10 @@ export class VendorService {
           vendor_name: row.vendor_name,
           vendor_type: vendorType,
           credit_days: row.credit_days,
-          locations: []
+          pan_number: row.pan_number,
+          primary_email: row.primary_email,
+          primary_mobile_number: row.primary_mobile_number,
+          locations: [],
         });
       }
 
@@ -38,20 +41,17 @@ export class VendorService {
         mobile_number: row.mobile_number,
         fax: row.fax,
         gst_number: row.gst_number,
-        pan_number: row.pan_number,
       });
     }
 
     return Array.from(vendorsMap.values());
   }
 
-
-
   public async bulkImportVendors(vendorRows: any[]) {
     try {
       const vendors = this.groupVendors(vendorRows);
       await this.vendorRepository.createMany(vendors);
-      return "Vendors imported successfully";
+      return 'Vendors imported successfully';
     } catch (error) {
       throw error;
     }

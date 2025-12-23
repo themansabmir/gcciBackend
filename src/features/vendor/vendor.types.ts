@@ -11,7 +11,6 @@ interface ILocation {
   mobile_number: string;
   fax: string;
   gst_number: string;
-  pan_number: string;
   email?: string;
 }
 
