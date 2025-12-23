@@ -86,7 +86,6 @@ export default class CustomerService {
               mobile_number: body.mobile_number,
               fax: '', // Optional
               gst_number: body.gst_number,
-              pan_number: body.pan_number,
             },
           ],
         });
