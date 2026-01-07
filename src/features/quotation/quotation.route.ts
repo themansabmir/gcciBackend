@@ -10,7 +10,7 @@ quotationRouter.get('/', quotationController.getAllQuotations);
 quotationRouter.get('/filter', quotationController.filterQuotations);
 quotationRouter.get('/filter-options', quotationController.getFilterOptions);
 
-// quotationRouter.get('/:id', quotationController.getQuotation);
+quotationRouter.get('/:id', quotationController.getQuotation);
 quotationRouter.put('/:id', quotationController.updateQuotation);
 quotationRouter.delete('/:id', quotationController.deleteQuotation);
 quotationRouter.patch('/:id/status', quotationController.changeQuotationStatus);
