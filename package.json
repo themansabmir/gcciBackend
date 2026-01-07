@@ -8,6 +8,8 @@
     "build": "tsc && tsc-alias",
     "start": "node -r tsconfig-paths/register dist/index.js",
     "gen:token": "node dist/lib/generateToken.js",
+    "seed": "ts-node -r tsconfig-paths/register src/seed.ts",
+    "cleanup": "ts-node -r tsconfig-paths/register src/cleanup.ts",
     "prepare": "husky",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.ts\""
