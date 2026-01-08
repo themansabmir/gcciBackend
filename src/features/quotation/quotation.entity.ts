@@ -53,6 +53,7 @@ const QuotationEntity = new Schema<IQuotation>(
       default: QUOTATION_STATUS.DRAFT,
       index: true,
     },
+    shipmentId: { type: Schema.Types.ObjectId, ref: 'Shipment', required: false, index: true },
   },
   {
     timestamps: true,

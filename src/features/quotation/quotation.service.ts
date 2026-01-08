@@ -20,6 +20,8 @@ import { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } from '../../config/env
 import puppeteer from 'puppeteer';
 import { VendorService } from '@features/vendor/vendor.service';
 import { vendorService } from '@features/vendor/vendor.controller';
+import { shipmentService } from '@features/shipment/shipment.controller';
+import { mblService } from '@features/mbl/mbl.controller';
 
 class QuotationService {
   private vendorService: VendorService;
@@ -196,7 +198,7 @@ class QuotationService {
     return quotationRepository.updateById(id, { status: QUOTATION_STATUS.DELETED });
   }
 
-  async changeStatus(id: string, status: QUOTATION_STATUS) {
+  async changeStatus(id: string, status: QUOTATION_STATUS, actorId?: string) {
     const quotation = await this.getQuotationById(id);
     if (!quotation) {
       throw new Error('Quotation not found');
@@ -215,7 +217,65 @@ class QuotationService {
       throw new Error(`Invalid status transition from ${quotation.status} to ${status}`);
     }
 
-    return await quotationRepository.updateById(id, { status });
+    const updatedQuotation = await quotationRepository.updateById(id, { status });
+
+    // If quotation is accepted, attempt to create a shipment draft
+    if (status === QUOTATION_STATUS.ACCEPTED) {
+      try {
+        if (!actorId) {
+          console.warn('No actorId provided; skipping auto-creation of shipment for accepted quotation');
+        } else {
+          // Map quotation.tradeType to shipment_type (IMP/EXP)
+          const qt = (quotation as any).tradeType || 'import';
+          const shipmentType = qt.toLowerCase() === 'export' ? 'EXP' : 'IMP';
+
+          const shipment = await shipmentService.createShipment({ shipment_type: shipmentType, created_by: actorId });
+
+          // Link shipment to quotation for traceability
+          await quotationRepository.updateById(id, { shipmentId: (shipment as any)._id });
+
+          // Informational log for easier manual testing/verification
+          console.info(`Auto-created shipment ${(shipment as any)._id} for quotation ${id} by actor ${actorId}`);
+
+          // Auto-create or update a basic MBL document mapping common fields from quotation
+          try {
+            const mblBody: Partial<any> = {
+              shipment_folder_id: (shipment as any)._id,
+              trade_type: ((quotation as any).tradeType || '').toLowerCase(),
+              shipment_type: (quotation as any).containerType,
+              shipping_line: (quotation as any).shippingLineId,
+              shipper: (quotation as any).customerId,
+              port_of_loading: (quotation as any).startPortId,
+              port_of_discharge: (quotation as any).endPortId,
+              description_of_goods: ((quotation as any).lineItems || []).map((li: any) => li.chargeName).join('; '),
+              containers:
+                (quotation as any).containerSize || (quotation as any).containerType
+                  ? [
+                      {
+                        container_size: (quotation as any).containerSize,
+                        container_type: (quotation as any).containerType,
+                        package_count: 0,
+                      },
+                    ]
+                  : undefined,
+            };
+
+            // Strip undefined keys (keeps payload clean)
+            Object.keys(mblBody).forEach((k) => (mblBody as any)[k] === undefined && delete (mblBody as any)[k]);
+
+            const mbl = await mblService.createOneOrUpdateMBL(mblBody);
+            console.info(`Auto-created/updated MBL ${(mbl as any)._id} for shipment ${(shipment as any)._id}`);
+          } catch (err) {
+            console.error('Error auto-creating MBL for accepted quotation:', (err as Error).message || err);
+          }
+        }
+      } catch (err) {
+        // Do not block status update; log the error for manual reconciliation
+        console.error('Error auto-creating shipment for accepted quotation:', err);
+      }
+    }
+
+    return updatedQuotation;
   }
 
   async duplicateQuotation(id: string) {

@@ -55,7 +55,8 @@ class QuotationController {
   async changeQuotationStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { status } = req.body;
-      const quotation = await quotationService.changeStatus(req.params.id, status);
+      const actorId = req.user?.id;
+      const quotation = await quotationService.changeStatus(req.params.id, status, actorId);
       res.status(200).json(quotation);
     } catch (error) {
       next(error);
