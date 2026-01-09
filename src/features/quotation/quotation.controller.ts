@@ -15,7 +15,7 @@ class QuotationController {
     try {
       const quotation = await quotationService.getQuotationById(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: 'Quotation not found' });
+        throw new Error('Quotation not found');
       }
       res.status(200).json(quotation);
     } catch (error) {

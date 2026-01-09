@@ -415,7 +415,27 @@ class QuotationService {
       throw new Error('Quotation not found');
     }
 
-    const html = renderTemplate('quotation', quotation.toObject());
+    // Fetch shipping line name
+    const vendorRepository = new VendorRepository(VendorEntity);
+    const shippingLine = await vendorRepository.findById((quotation as any).shippingLineId?.toString());
+    const shippingLineName = shippingLine?.vendor_name || 'N/A';
+
+    // Fetch port names
+    const portRepository = new PortRepository(PortModel);
+    const startPort = await portRepository.findById((quotation as any).startPortId);
+    const endPort = await portRepository.findById((quotation as any).endPortId);
+    const startPortName = startPort?.port_name || 'N/A';
+    const endPortName = endPort?.port_name || 'N/A';
+
+    // Merge quotation data with resolved names
+    const templateData = {
+      ...quotation.toObject(),
+      shippingLineName,
+      startPortName,
+      endPortName,
+    };
+
+    const html = renderTemplate('quotation', templateData);
 
     const browser = await puppeteer.launch({
       headless: true,

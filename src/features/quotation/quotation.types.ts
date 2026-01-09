@@ -12,6 +12,7 @@ export enum QUOTATION_STATUS {
 export interface IQuotation extends Document {
   quotationNumber: string;
   customerId: Types.ObjectId;
+  customerAddressId: string;
   customerName: string;
   customerEmail: string;
   shippingLineId: Types.ObjectId;

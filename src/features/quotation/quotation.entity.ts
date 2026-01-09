@@ -33,6 +33,7 @@ const QuotationEntity = new Schema<IQuotation>(
       required: true,
       index: true,
     },
+    customerAddressId: String,
     customerName: { type: String, required: true },
     customerEmail: { type: String, required: true },
     shippingLineId: {
