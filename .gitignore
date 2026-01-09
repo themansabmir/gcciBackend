@@ -35,3 +35,8 @@ temp/
 
 # Debug
 /coverage
+
+# Dev-only Postman collections and scripts
+scripts/postman/
+scripts/*.postman_collection.json
+

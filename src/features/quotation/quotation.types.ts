@@ -24,6 +24,7 @@ export interface IQuotation extends Document {
   validFrom: Date;
   validTo: Date;
   status: QUOTATION_STATUS;
+  shipmentId?: Types.ObjectId;
   lineItems: IQuotationLineItem[];
   createdAt: Date;
   updatedAt: Date;
@@ -64,6 +65,7 @@ export type CreateQuotationDTO = {
   lineItems: CreateQuotationLineItemDTO[];
   quotationNumber?: string;
   status?: QUOTATION_STATUS;
+  shipmentId?: Types.ObjectId | string;
 };
 
 export type UpdateQuotationDTO = Partial<CreateQuotationDTO>;
