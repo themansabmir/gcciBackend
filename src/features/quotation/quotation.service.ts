@@ -243,12 +243,13 @@ class QuotationService {
               shipment_folder_id: shipmentFolderId,
               trade_type: quotation.tradeType,
               shipping_line: quotation.shippingLineId,
-              shipper: quotation.customerId,
+              billing_party: quotation.customerId,
+              billing_party_address: quotation.customerAddressId,
               port_of_loading: quotation.startPortId,
               port_of_discharge: quotation.endPortId,
             };
 
-            const mbl = await mblService.createOneOrUpdateMBL(mblBody);
+            return await mblService.createOneOrUpdateMBL(mblBody);
           } catch (err) {
             console.error('Error auto-creating MBL for accepted quotation:', (err as Error).message || err);
           }
