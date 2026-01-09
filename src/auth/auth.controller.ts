@@ -37,7 +37,7 @@ class AuthController {
   public updatePassword: RequestHandler<{ id: string }, any, IUpdatePassword> = async (
     req: Request<{ id: string }, any, IUpdatePassword>,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ) => {
     try {
       const id = req.params.id;
@@ -55,5 +55,5 @@ class AuthController {
 const jwtService = new JwtService();
 const bcryptService = new BcryptService();
 const teamRepository = new TeamRepository(TeamEntity);
-const authService = new AuthService(teamRepository, bcryptService, jwtService);
+export const authService = new AuthService(teamRepository, bcryptService, jwtService);
 export const authController = new AuthController(authService);
