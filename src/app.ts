@@ -47,17 +47,17 @@ app.get('/', (req, res) => {
 app.use('/api', authRouter);
 app.use('/api/shipment', validateToken, shipmentRouter);
 app.use('/api/team', validateToken, teamRouter);
-app.use('/api/vendor', vendorRouter);
+app.use('/api/vendor', validateToken, vendorRouter);
 app.use('/api/airport', validateToken, airportRouter);
-app.use('/api/port', portRouter);
+app.use('/api/port', validateToken, portRouter);
 app.use('/api/mbl', validateToken, mblRouter);
 app.use('/api/hbl', validateToken, hblRouter);
 app.use('/api/invoiceitem', validateToken, invoiceItemRouter);
-app.use('/api/finance', financeRouter);
-app.use('/api/excel', excelRouter);
-app.use('/api/rate-sheet', rateSheetMasterRouter);
-app.use('/api/customer', customerRouter);
-app.use('/api/quotation', quotationRouter);
+app.use('/api/finance', validateToken, financeRouter);
+app.use('/api/excel', validateToken, excelRouter);
+app.use('/api/rate-sheet', validateToken, rateSheetMasterRouter);
+app.use('/api/customer', validateToken, customerRouter);
+app.use('/api/quotation', validateToken, quotationRouter);
 app.use('/api/file', validateToken, fileRouter);
 
 // GLOBAL ERROR HANDLER

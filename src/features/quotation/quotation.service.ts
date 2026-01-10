@@ -221,45 +221,6 @@ class QuotationService {
 
     const updatedQuotation = await quotationRepository.updateById(id, { status });
 
-    // If quotation is accepted, attempt to create a shipment draft
-    if (status === QUOTATION_STATUS.ACCEPTED) {
-      try {
-        if (!actorId) {
-          console.warn('No actorId provided; skipping auto-creation of shipment for accepted quotation');
-        } else {
-          // Map quotation.tradeType to shipment_type (IMP/EXP)
-          const qt = (quotation as any).tradeType || 'IMPORT';
-          const shipmentType = qt.toLowerCase() === 'export' ? 'EXP' : 'IMP';
-          const shipmentDto: Partial<IShipment> = {
-            shipment_type: shipmentType,
-            created_by: actorId as unknown as ObjectId,
-          };
-
-          const { _id: shipmentFolderId } = await shipmentService.createShipment(shipmentDto as unknown as IShipment);
-
-          // Auto-create or update a basic MBL document mapping common fields from quotation
-          try {
-            const mblBody: Partial<any> = {
-              shipment_folder_id: shipmentFolderId,
-              trade_type: quotation.tradeType,
-              shipping_line: quotation.shippingLineId,
-              billing_party: quotation.customerId,
-              billing_party_address: quotation.customerAddressId,
-              port_of_loading: quotation.startPortId,
-              port_of_discharge: quotation.endPortId,
-            };
-
-            return await mblService.createOneOrUpdateMBL(mblBody);
-          } catch (err) {
-            console.error('Error auto-creating MBL for accepted quotation:', (err as Error).message || err);
-          }
-        }
-      } catch (err) {
-        // Do not block status update; log the error for manual reconciliation
-        console.error('Error auto-creating shipment for accepted quotation:', err);
-      }
-    }
-
     return updatedQuotation;
   }
 
